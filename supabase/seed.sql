@@ -83,6 +83,16 @@ insert into members (id, club_id, user_id, role, full_name, email, belt_id, stat
   ('d1000000-0000-4000-8000-00000000000c', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Здравка Тодорова', 'zdravka.t@example.bg', 'b1000000-0000-4000-8000-000000000001', 'left', '2018-04-01', 2007, true, '2018-04-01')
 on conflict (id) do nothing;
 
+-- Guardian contact for a few of the minors, so the coach's (view-only) panel
+-- has something real to show. Optional in general — most seeded students
+-- below don't have one, same as a real club onboarding gradually.
+update members set guardian_first_name = 'Пламен', guardian_last_name = 'Николов', guardian_phone = '+359888100001'
+  where id = 'd1000000-0000-4000-8000-000000000005';
+update members set guardian_first_name = 'Милена', guardian_last_name = 'Петрова', guardian_phone = '+359888100002', guardian_email = 'milena.petrova@example.bg'
+  where id = 'd1000000-0000-4000-8000-000000000006';
+update members set guardian_first_name = 'Христо', guardian_phone = '+359888100003'
+  where id = 'd1000000-0000-4000-8000-000000000009';
+
 insert into classes (id, club_id, title, weekday, start_time, duration_min, coach_member_id, belt_min_rank, belt_max_rank) values
   ('e1000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001', 'Начинаещи', 1, '18:00', 60, 'd1000000-0000-4000-8000-000000000002', 0, 2),
   ('e1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000001', 'Напреднали', 3, '19:00', 75, 'd1000000-0000-4000-8000-000000000002', 3, 6),

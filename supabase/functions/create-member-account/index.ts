@@ -2,9 +2,11 @@
 // action. This has to run server-side: creating another person's auth
 // account requires the service-role key, which must never reach a browser.
 //
-// Auth model: only a club's own owner/coach may call this (checked via
-// is_club_staff(), the same RLS helper the database policies use). There is
-// no public sign-up anywhere in the product.
+// Auth model: called from TatamiHub by a platform admin — a club's own
+// coach/owner can no longer add members themselves (that's the whole point:
+// a coach who wants a new student added calls/texts us, we add them from the
+// Hub). Also accepts club staff via is_club_staff() in case a club ever gets
+// this back as self-service. There is no public sign-up anywhere.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -73,10 +75,15 @@ Deno.serve(async (req) => {
     return json({ error: 'club_id, email and password are required' }, 400)
   }
 
-  const { data: isStaff } = await callerClient.rpc('is_club_staff', {
-    p_club_id: body.club_id,
-  })
-  if (!isStaff) {
+  // Club staff no longer get this from their own site (see 0005's RLS
+  // lockdown) — this now runs from TatamiHub, called by a platform admin.
+  // is_club_staff is still checked too so the function keeps working if a
+  // club ever gets self-service back for this later.
+  const [{ data: isPlatformAdmin }, { data: isStaff }] = await Promise.all([
+    callerClient.rpc('is_platform_admin'),
+    callerClient.rpc('is_club_staff', { p_club_id: body.club_id }),
+  ])
+  if (!isPlatformAdmin && !isStaff) {
     return json({ error: 'Not authorized for this club' }, 403)
   }
 
