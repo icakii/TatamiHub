@@ -125,8 +125,9 @@ insert into notifications (club_id, member_id, announcement_id, title, body) val
   ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000004', 'f1000000-0000-4000-8000-000000000001', 'Добре дошли', 'Добре дошли в Kime Karate Club! Очакваме ви на тренировка.');
 
 -- What Kime pays us. Never visible to Kime's own owner/coach accounts.
-insert into club_billing (club_id, plan, monthly_price_cents, build_fee_cents, paid_until, notes) values
-  ('c1000000-0000-4000-8000-000000000001', 'basic', 2000, 30000, (current_date + interval '1 month')::date, 'Demo club, not a real paying customer.')
+-- Launch pricing: 50 EUR the first month, 70 EUR/month after that.
+insert into club_billing (club_id, plan, first_month_price_cents, monthly_price_cents, build_fee_cents, paid_until, notes) values
+  ('c1000000-0000-4000-8000-000000000001', 'basic', 5000, 7000, 30000, (current_date + interval '1 month')::date, 'Demo club, not a real paying customer.')
 on conflict (club_id) do nothing;
 
 -- ---------------------------------------------------------------------------
