@@ -17,7 +17,7 @@ select set_config('request.jwt.claims', json_build_object('sub', 'a1000000-0000-
 do $$
 declare v_count int;
 begin
-  select count(*) into v_count from members where id = 'm1000000-0000-4000-8000-000000000003';
+  select count(*) into v_count from members where id = 'd1000000-0000-4000-8000-000000000003';
   if v_count <> 1 then raise exception 'FAIL: student1 should read own member row (got %)', v_count; end if;
   raise notice 'PASS: student1 reads own member row';
 end $$;
@@ -41,7 +41,7 @@ end $$;
 do $$
 declare v_count int;
 begin
-  select count(*) into v_count from member_notes where member_id = 'm1000000-0000-4000-8000-000000000003';
+  select count(*) into v_count from member_notes where member_id = 'd1000000-0000-4000-8000-000000000003';
   if v_count <> 0 then raise exception 'FAIL: student1 should not read coach notes about themselves (got %)', v_count; end if;
   raise notice 'PASS: student1 cannot read their own coach notes';
 end $$;
@@ -100,7 +100,7 @@ end $$;
 do $$
 declare v_count int;
 begin
-  select count(*) into v_count from member_notes where member_id = 'm1000000-0000-4000-8000-000000000003';
+  select count(*) into v_count from member_notes where member_id = 'd1000000-0000-4000-8000-000000000003';
   if v_count <> 1 then raise exception 'FAIL: coach should read their own note (got %)', v_count; end if;
   raise notice 'PASS: coach reads the coach note';
 end $$;
