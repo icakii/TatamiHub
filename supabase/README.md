@@ -19,8 +19,9 @@ Never copy the `service_role` key into either app's `.env` — that key bypasses
 Open **SQL Editor** in the dashboard, and run these files in this exact order (paste contents, click Run):
 
 1. `migrations/0001_schema.sql` — all tables
-2. `migrations/0002_functions.sql` — `is_platform_admin()`, `member_role()`, `is_club_staff()`, and the invite-code/email claim functions
+2. `migrations/0002_functions.sql` — `is_platform_admin()`, `member_role()`, `is_club_staff()`
 3. `migrations/0003_rls.sql` — enables RLS and creates every policy
+4. `migrations/0004_drop_self_claim.sql` — removes the invite-code/email self-claim functions and column. There's no public self-registration: a coach/owner creates each student's login directly (planned as an Edge Function using the service-role key, since creating another person's auth account needs elevated privileges no browser client should ever hold).
 
 ## 3. Load the demo data (optional but recommended)
 

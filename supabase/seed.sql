@@ -4,9 +4,11 @@
 -- The auth.users rows here exist only so members/payments can reference a
 -- valid user_id for RLS testing (see supabase/tests/rls_test.sql). They are
 -- not guaranteed to be sign-in-ready through the app, since Supabase's
--- internal auth tables vary slightly by project version. To test the real
--- sign-up flow, register normally through the app UI and then call
--- claim_member_by_code() with a seeded member's invite_code.
+-- internal auth tables vary slightly by project version. There's no
+-- self-registration in this app: a coach/owner creates each student's login
+-- from the admin panel, so testing the real sign-in flow means creating a
+-- user through Authentication -> Users in the dashboard and linking it to a
+-- members row yourself for now (the admin panel will do this later).
 
 -- ---------------------------------------------------------------------------
 -- Kime Karate Club (the real demo club)
@@ -65,19 +67,20 @@ insert into members (id, club_id, user_id, role, full_name, email, belt_id, stat
   ('d1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000002', 'coach', 'Елена Дичева', 'coach@kime.demo', 'b1000000-0000-4000-8000-000000000006', 'active', '2020-01-15', 1990, true, '2020-01-15')
 on conflict (id) do nothing;
 
--- 10 fictional students: 2 already linked to a login (student1/student2),
--- 8 created by the coach and waiting to be claimed via invite_code.
-insert into members (id, club_id, user_id, role, full_name, email, belt_id, status, joined_at, birth_year, guardian_consent, consent_at, invite_code) values
-  ('d1000000-0000-4000-8000-000000000003', 'c1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000003', 'student', 'Мартин Иванов', 'student1@kime.demo', 'b1000000-0000-4000-8000-000000000003', 'active', '2022-09-01', 2012, true, '2022-09-01', null),
-  ('d1000000-0000-4000-8000-000000000004', 'c1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000004', 'student', 'Виктория Стоянова', 'student2@kime.demo', 'b1000000-0000-4000-8000-000000000002', 'active', '2023-02-10', 2013, true, '2023-02-10', null),
-  ('d1000000-0000-4000-8000-000000000005', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Георги Николов', 'georgi.n@example.bg', 'b1000000-0000-4000-8000-000000000000', 'trial', '2024-05-01', 2015, false, null, 'KIME-GN01'),
-  ('d1000000-0000-4000-8000-000000000006', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Ивайла Петрова', 'ivayla.p@example.bg', 'b1000000-0000-4000-8000-000000000001', 'active', '2021-11-20', 2011, true, '2021-11-20', 'KIME-IP02'),
-  ('d1000000-0000-4000-8000-000000000007', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Радослав Ангелов', 'rado.angelov@example.bg', 'b1000000-0000-4000-8000-000000000004', 'active', '2020-06-05', 2009, true, '2020-06-05', 'KIME-RA03'),
-  ('d1000000-0000-4000-8000-000000000008', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Симона Колева', 'simona.k@example.bg', 'b1000000-0000-4000-8000-000000000005', 'active', '2019-09-12', 2008, true, '2019-09-12', 'KIME-SK04'),
-  ('d1000000-0000-4000-8000-000000000009', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Даниел Христов', 'daniel.h@example.bg', 'b1000000-0000-4000-8000-000000000000', 'trial', '2024-08-20', 2016, false, null, 'KIME-DH05'),
-  ('d1000000-0000-4000-8000-00000000000a', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Кристина Георгиева', 'kristina.g@example.bg', 'b1000000-0000-4000-8000-000000000002', 'paused', '2021-01-08', 2010, true, '2021-01-08', 'KIME-KG06'),
-  ('d1000000-0000-4000-8000-00000000000b', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Борис Марков', 'boris.markov@example.bg', 'b1000000-0000-4000-8000-000000000003', 'active', '2022-03-14', 2012, true, '2022-03-14', 'KIME-BM07'),
-  ('d1000000-0000-4000-8000-00000000000c', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Здравка Тодорова', 'zdravka.t@example.bg', 'b1000000-0000-4000-8000-000000000001', 'left', '2018-04-01', 2007, true, '2018-04-01', 'KIME-ZT08')
+-- 10 fictional students: 2 already have a coach-created login (student1/
+-- student2), 8 exist as members but have no login yet (the coach hasn't
+-- created their account in the admin panel).
+insert into members (id, club_id, user_id, role, full_name, email, belt_id, status, joined_at, birth_year, guardian_consent, consent_at) values
+  ('d1000000-0000-4000-8000-000000000003', 'c1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000003', 'student', 'Мартин Иванов', 'student1@kime.demo', 'b1000000-0000-4000-8000-000000000003', 'active', '2022-09-01', 2012, true, '2022-09-01'),
+  ('d1000000-0000-4000-8000-000000000004', 'c1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000004', 'student', 'Виктория Стоянова', 'student2@kime.demo', 'b1000000-0000-4000-8000-000000000002', 'active', '2023-02-10', 2013, true, '2023-02-10'),
+  ('d1000000-0000-4000-8000-000000000005', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Георги Николов', 'georgi.n@example.bg', 'b1000000-0000-4000-8000-000000000000', 'trial', '2024-05-01', 2015, false, null),
+  ('d1000000-0000-4000-8000-000000000006', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Ивайла Петрова', 'ivayla.p@example.bg', 'b1000000-0000-4000-8000-000000000001', 'active', '2021-11-20', 2011, true, '2021-11-20'),
+  ('d1000000-0000-4000-8000-000000000007', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Радослав Ангелов', 'rado.angelov@example.bg', 'b1000000-0000-4000-8000-000000000004', 'active', '2020-06-05', 2009, true, '2020-06-05'),
+  ('d1000000-0000-4000-8000-000000000008', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Симона Колева', 'simona.k@example.bg', 'b1000000-0000-4000-8000-000000000005', 'active', '2019-09-12', 2008, true, '2019-09-12'),
+  ('d1000000-0000-4000-8000-000000000009', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Даниел Христов', 'daniel.h@example.bg', 'b1000000-0000-4000-8000-000000000000', 'trial', '2024-08-20', 2016, false, null),
+  ('d1000000-0000-4000-8000-00000000000a', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Кристина Георгиева', 'kristina.g@example.bg', 'b1000000-0000-4000-8000-000000000002', 'paused', '2021-01-08', 2010, true, '2021-01-08'),
+  ('d1000000-0000-4000-8000-00000000000b', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Борис Марков', 'boris.markov@example.bg', 'b1000000-0000-4000-8000-000000000003', 'active', '2022-03-14', 2012, true, '2022-03-14'),
+  ('d1000000-0000-4000-8000-00000000000c', 'c1000000-0000-4000-8000-000000000001', null, 'student', 'Здравка Тодорова', 'zdravka.t@example.bg', 'b1000000-0000-4000-8000-000000000001', 'left', '2018-04-01', 2007, true, '2018-04-01')
 on conflict (id) do nothing;
 
 insert into classes (id, club_id, title, weekday, start_time, duration_min, coach_member_id, belt_min_rank, belt_max_rank) values
