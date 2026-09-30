@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { AnnouncementComposer } from '../components/announcements/AnnouncementComposer'
+import { AnnouncementHistory } from '../components/announcements/AnnouncementHistory'
 import { AddMemberModal } from '../components/members/AddMemberModal'
 import { CreateLoginModal } from '../components/members/CreateLoginModal'
 import { EditGuardianModal } from '../components/members/EditGuardianModal'
@@ -7,10 +9,51 @@ import { useClub } from '../hooks/useClubs'
 import { useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
 
 const STATUSES = ['active', 'trial', 'paused', 'left'] as const
+const TABS = ['members', 'announcements'] as const
+type Tab = (typeof TABS)[number]
 
 export function ClubDetail() {
   const { clubId } = useParams<{ clubId: string }>()
   const { data: club } = useClub(clubId)
+  const [tab, setTab] = useState<Tab>('members')
+
+  if (!clubId || !club) return null
+
+  return (
+    <div className="px-6 py-6">
+      <Link to="/" className="text-xs uppercase tracking-wide text-muted hover:text-hanko-text">
+        &larr; Clubs
+      </Link>
+
+      <h1 className="mt-2 font-display text-xl uppercase tracking-wide text-text">{club.name}</h1>
+
+      <nav className="mt-4 flex gap-4 border-b border-line font-display text-xs uppercase tracking-wide">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className={`pb-2 ${
+              tab === t ? 'border-b-2 border-hanko text-text' : 'text-muted'
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </nav>
+
+      {tab === 'members' && <MembersTab clubId={clubId} />}
+      {tab === 'announcements' && (
+        <div className="mt-6">
+          <AnnouncementComposer clubId={clubId} channels={club.channels} />
+          <AnnouncementHistory clubId={clubId} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MembersTab({ clubId }: { clubId: string }) {
   const { data: members, isLoading } = useMembers(clubId)
   const { data: belts } = useBelts(clubId)
   const updateMember = useUpdateMember(clubId)
@@ -25,16 +68,15 @@ export function ClubDetail() {
     return (members ?? []).filter((m) => m.full_name.toLowerCase().includes(search.toLowerCase()))
   }, [members, search])
 
-  if (!clubId || !club) return null
-
   return (
-    <div className="px-6 py-6">
-      <Link to="/" className="text-xs uppercase tracking-wide text-muted hover:text-hanko-text">
-        &larr; Clubs
-      </Link>
-
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-xl uppercase tracking-wide text-text">{club.name}</h1>
+    <div className="mt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name"
+          className="min-h-11 w-full max-w-sm rounded-md border border-line bg-panel px-3 text-text outline-none focus:border-hanko-text"
+        />
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
@@ -43,13 +85,6 @@ export function ClubDetail() {
           Add member
         </button>
       </div>
-
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name"
-        className="mt-4 min-h-11 w-full max-w-sm rounded-md border border-line bg-panel px-3 text-text outline-none focus:border-hanko-text"
-      />
 
       <div className="mt-4 overflow-x-auto rounded-lg border border-line">
         <table className="w-full min-w-[760px] border-collapse text-sm">
