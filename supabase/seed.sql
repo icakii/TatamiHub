@@ -100,10 +100,15 @@ insert into classes (id, club_id, title, weekday, start_time, duration_min, coac
 on conflict (id) do nothing;
 
 -- One "time changed" notice, feeds the red badge on the student home card.
+-- No fixed id for this table, so re-running clears Kime's notices first
+-- instead of duplicating them.
+delete from class_notices where club_id = 'c1000000-0000-4000-8000-000000000001';
 insert into class_notices (club_id, class_id, effective_date, new_start_time, note, created_by) values
   ('c1000000-0000-4000-8000-000000000001', 'e1000000-0000-4000-8000-000000000001', current_date + interval '2 days', '19:00', 'Треньорът мести часа с един час напред тази седмица.', 'a1000000-0000-4000-8000-000000000002');
 
 -- Payments for the 10 students, current calendar month, mixed statuses.
+-- Same idempotency approach: no fixed ids, so clear Kime's payments first.
+delete from payments where club_id = 'c1000000-0000-4000-8000-000000000001';
 insert into payments (club_id, member_id, amount_cents, currency, method, period_start, period_end, status, recorded_by) values
   ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000003', 4000, 'EUR', 'cash', date_trunc('month', now())::date, (date_trunc('month', now()) + interval '1 month' - interval '1 day')::date, 'paid', 'a1000000-0000-4000-8000-000000000001'),
   ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000004', 4000, 'EUR', 'bank', date_trunc('month', now())::date, (date_trunc('month', now()) + interval '1 month' - interval '1 day')::date, 'paid', 'a1000000-0000-4000-8000-000000000001'),
@@ -118,17 +123,30 @@ insert into payments (club_id, member_id, amount_cents, currency, method, period
 
 -- A welcome announcement + matching inbox notifications for the two claimed students.
 insert into announcements (id, club_id, title, body_bg, body_en, audience, channels, created_by, sent_at) values
-  ('f1000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001', 'Добре дошли', 'Добре дошли в Kime Karate Club! Очакваме ви на тренировка.', 'Welcome to Kime Karate Club! See you on the mat.', '{"all": true}'::jsonb, array['in_app'], 'a1000000-0000-4000-8000-000000000002', now());
+  ('f1000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001', 'Добре дошли', 'Добре дошли в Kime Karate Club! Очакваме ви на тренировка.', 'Welcome to Kime Karate Club! See you on the mat.', '{"all": true}'::jsonb, array['in_app'], 'a1000000-0000-4000-8000-000000000002', now())
+on conflict (id) do nothing;
 
+-- No fixed ids on notifications, so clear this announcement's notifications
+-- first instead of duplicating the inbox entries on every re-run.
+delete from notifications where announcement_id = 'f1000000-0000-4000-8000-000000000001';
 insert into notifications (club_id, member_id, announcement_id, title, body) values
   ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000003', 'f1000000-0000-4000-8000-000000000001', 'Добре дошли', 'Добре дошли в Kime Karate Club! Очакваме ви на тренировка.'),
   ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000004', 'f1000000-0000-4000-8000-000000000001', 'Добре дошли', 'Добре дошли в Kime Karate Club! Очакваме ви на тренировка.');
 
 -- What Kime pays us. Never visible to Kime's own owner/coach accounts.
 -- Launch pricing: 50 EUR the first month, 70 EUR/month after that.
+-- Upsert, not do-nothing: if you seeded before these prices existed, this
+-- updates them instead of leaving the old values in place. paid_until is
+-- deliberately left out of the update so a "Mark paid" click in the Hub
+-- doesn't get reset by re-running this file.
 insert into club_billing (club_id, plan, first_month_price_cents, monthly_price_cents, build_fee_cents, paid_until, notes) values
   ('c1000000-0000-4000-8000-000000000001', 'basic', 5000, 7000, 30000, (current_date + interval '1 month')::date, 'Demo club, not a real paying customer.')
-on conflict (club_id) do nothing;
+on conflict (club_id) do update set
+  plan = excluded.plan,
+  first_month_price_cents = excluded.first_month_price_cents,
+  monthly_price_cents = excluded.monthly_price_cents,
+  build_fee_cents = excluded.build_fee_cents,
+  notes = excluded.notes;
 
 -- ---------------------------------------------------------------------------
 -- Second, minimal club used only to prove cross-club RLS isolation in
@@ -151,11 +169,13 @@ insert into members (id, club_id, user_id, role, full_name, status, joined_at) v
   ('d2000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000001', 'a2000000-0000-4000-8000-000000000001', 'student', 'Test Student B', 'active', current_date)
 on conflict (id) do nothing;
 
+delete from payments where club_id = 'c2000000-0000-4000-8000-000000000001';
 insert into payments (club_id, member_id, amount_cents, method, period_start, period_end, status) values
   ('c2000000-0000-4000-8000-000000000001', 'd2000000-0000-4000-8000-000000000001', 4000, 'cash', date_trunc('month', now())::date, (date_trunc('month', now()) + interval '1 month' - interval '1 day')::date, 'paid');
 
 -- Coach-only note on one Kime student, used to prove students can never
--- read their own coach notes.
+-- read their own coach notes. No fixed id, so clear first.
+delete from member_notes where club_id = 'c1000000-0000-4000-8000-000000000001';
 insert into member_notes (club_id, member_id, body, created_by) values
   ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000003', 'Много добър напредък, готов е за следващия пояс.', 'a1000000-0000-4000-8000-000000000002');
 

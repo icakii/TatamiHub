@@ -69,4 +69,4 @@ anything, so it's safe to leave publicly reachable.
 
 ## Re-running after schema changes
 
-Every migration file uses `create table if not exists` / `create or replace function` / `drop policy if exists` so they're safe to re-run. `seed.sql` uses `on conflict (id) do nothing` for its fixed demo UUIDs, so re-running it won't duplicate rows.
+Every migration file uses `create table if not exists` / `create or replace function` / `drop policy if exists` so they're safe to re-run. `seed.sql` is also safe to re-run in full, top to bottom: rows with a fixed demo UUID use `on conflict (id) do nothing`, `club_billing`'s prices use an upsert (so pricing changes actually apply on re-run, without resetting `paid_until`), and the few tables with no fixed id (`payments`, `notifications`, `class_notices`, `member_notes`) delete their own demo rows right before re-inserting them.
