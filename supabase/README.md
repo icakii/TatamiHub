@@ -67,6 +67,26 @@ environment variables. The function itself checks the caller is an
 owner/coach of the target club (via `is_club_staff()`) before creating
 anything, so it's safe to leave publicly reachable.
 
+## 7. Deploy the announcement-email Edge Function
+
+Announcements are written and sent from TatamiHub (not the club site).
+In-app delivery is a plain database write, but the email channel needs a
+[Resend](https://resend.com) account (free tier) since sending mail needs an
+API key that can't live in the browser:
+
+1. Sign up at resend.com (free), create an API key.
+2. Deploy the function and set the secret:
+
+```bash
+supabase functions deploy send-announcement
+supabase secrets set RESEND_API_KEY=<your-resend-api-key>
+```
+
+Sends come from `onboarding@resend.dev` until you verify your own domain in
+Resend — fine for testing, but Resend's sandbox mode only delivers to your
+own verified email address until a domain is verified, so real delivery to
+students needs that step first.
+
 ## Re-running after schema changes
 
 Every migration file uses `create table if not exists` / `create or replace function` / `drop policy if exists` so they're safe to re-run. `seed.sql` is also safe to re-run in full, top to bottom: rows with a fixed demo UUID use `on conflict (id) do nothing`, `club_billing`'s prices use an upsert (so pricing changes actually apply on re-run, without resetting `paid_until`), and the few tables with no fixed id (`payments`, `notifications`, `class_notices`, `member_notes`) delete their own demo rows right before re-inserting them.
