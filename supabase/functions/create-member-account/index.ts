@@ -1,0 +1,155 @@
+// Creates a student/coach login and links it to a members row, in one atomic
+// action. This has to run server-side: creating another person's auth
+// account requires the service-role key, which must never reach a browser.
+//
+// Auth model: only a club's own owner/coach may call this (checked via
+// is_club_staff(), the same RLS helper the database policies use). There is
+// no public sign-up anywhere in the product.
+import { createClient } from 'npm:@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+function json(body: unknown, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
+interface RequestBody {
+  club_id: string
+  member_id?: string
+  full_name?: string
+  email: string
+  password: string
+  belt_id?: string
+  role?: 'student' | 'coach'
+  birth_year?: number
+  phone?: string
+  guardian_consent?: boolean
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+  if (req.method !== 'POST') {
+    return json({ error: 'Method not allowed' }, 405)
+  }
+
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader) {
+    return json({ error: 'Missing Authorization header' }, 401)
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+  // Scoped to the caller's own session, so RLS applies exactly as it would
+  // from the browser.
+  const callerClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  })
+
+  const {
+    data: { user: caller },
+  } = await callerClient.auth.getUser()
+  if (!caller) {
+    return json({ error: 'Not authenticated' }, 401)
+  }
+
+  let body: RequestBody
+  try {
+    body = await req.json()
+  } catch {
+    return json({ error: 'Invalid JSON body' }, 400)
+  }
+
+  if (!body.club_id || !body.email || !body.password) {
+    return json({ error: 'club_id, email and password are required' }, 400)
+  }
+
+  const { data: isStaff } = await callerClient.rpc('is_club_staff', {
+    p_club_id: body.club_id,
+  })
+  if (!isStaff) {
+    return json({ error: 'Not authorized for this club' }, 403)
+  }
+
+  // Elevated client, only ever used after the staff check above.
+  const adminClient = createClient(supabaseUrl, serviceRoleKey)
+
+  const { data: created, error: createError } = await adminClient.auth.admin.createUser({
+    email: body.email,
+    password: body.password,
+    email_confirm: true,
+  })
+  if (createError || !created.user) {
+    return json({ error: createError?.message ?? 'Could not create the account' }, 400)
+  }
+  const newUserId = created.user.id
+
+  if (body.member_id) {
+    const { data: existing } = await adminClient
+      .from('members')
+      .select('id, user_id, club_id')
+      .eq('id', body.member_id)
+      .single()
+
+    if (!existing || existing.club_id !== body.club_id) {
+      await adminClient.auth.admin.deleteUser(newUserId)
+      return json({ error: 'Member not found in this club' }, 404)
+    }
+    if (existing.user_id) {
+      await adminClient.auth.admin.deleteUser(newUserId)
+      return json({ error: 'This member already has a login' }, 409)
+    }
+
+    const { data: updated, error: updateError } = await adminClient
+      .from('members')
+      .update({ user_id: newUserId, email: body.email })
+      .eq('id', body.member_id)
+      .select('id, full_name, role, status, belt_id, email')
+      .single()
+
+    if (updateError) {
+      await adminClient.auth.admin.deleteUser(newUserId)
+      return json({ error: updateError.message }, 500)
+    }
+    return json({ member: updated }, 200)
+  }
+
+  if (!body.full_name) {
+    await adminClient.auth.admin.deleteUser(newUserId)
+    return json({ error: 'full_name is required for a new member' }, 400)
+  }
+
+  const { data: inserted, error: insertError } = await adminClient
+    .from('members')
+    .insert({
+      club_id: body.club_id,
+      user_id: newUserId,
+      role: body.role ?? 'student',
+      full_name: body.full_name,
+      email: body.email,
+      belt_id: body.belt_id ?? null,
+      status: 'active',
+      birth_year: body.birth_year ?? null,
+      phone: body.phone ?? null,
+      guardian_consent: body.guardian_consent ?? false,
+      consent_at: body.guardian_consent ? new Date().toISOString() : null,
+    })
+    .select('id, full_name, role, status, belt_id, email')
+    .single()
+
+  if (insertError) {
+    await adminClient.auth.admin.deleteUser(newUserId)
+    return json({ error: insertError.message }, 500)
+  }
+
+  return json({ member: inserted }, 200)
+})

@@ -1,8 +1,9 @@
 # Supabase project setup
 
-This folder holds the SQL for the one shared Supabase project used by both
-`TatamiHub` and `KimeClub`. There's no Supabase CLI dependency required —
-everything below can be pasted straight into the dashboard's SQL Editor.
+This folder holds the SQL and Edge Functions for the one shared Supabase
+project used by both `TatamiHub` and `KimeClub`. Steps 1-5 need no tooling —
+paste straight into the dashboard's SQL Editor. Step 6 (the Edge Function)
+needs the Supabase CLI, since it deploys code rather than SQL.
 
 ## 1. Create the project
 
@@ -44,6 +45,26 @@ Sign up through the TatamiHub app once it's deployed, then find your user id und
 ```sql
 insert into platform_admins (user_id) values ('YOUR-AUTH-USER-UUID');
 ```
+
+## 6. Deploy the account-creation Edge Function
+
+Students never self-register. A coach/owner creates each login from the
+admin panel, which calls `functions/create-member-account`. That function
+needs the `service_role` key to create another person's login, so it has to
+run on Supabase's servers, not in the browser — deploying it needs the CLI:
+
+```bash
+npm install -g supabase
+supabase login
+supabase link --project-ref <your-project-ref>   # found in the dashboard URL
+supabase functions deploy create-member-account
+```
+
+No manual secrets to set: Supabase automatically gives every Edge Function
+`SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as
+environment variables. The function itself checks the caller is an
+owner/coach of the target club (via `is_club_staff()`) before creating
+anything, so it's safe to leave publicly reachable.
 
 ## Re-running after schema changes
 
