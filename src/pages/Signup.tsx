@@ -47,6 +47,14 @@ export function Signup() {
             Find your user id under Authentication {'->'} Users in the Supabase dashboard, by your
             email.
           </p>
+          <p className="mt-4 text-sm text-muted">
+            If this project requires email confirmation, you'll also need to confirm your address
+            (check your inbox for a link) before you can log in — or a platform admin can confirm
+            it directly in the SQL editor:
+          </p>
+          <pre className="mt-4 overflow-x-auto rounded-md border border-line bg-ink p-3 text-left text-xs text-text">
+            update auth.users set email_confirmed_at = now() where email = 'YOUR-EMAIL';
+          </pre>
           <Link to="/login" className="mt-6 inline-block text-sm text-hanko-text hover:underline">
             Go to login
           </Link>

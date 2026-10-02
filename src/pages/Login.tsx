@@ -22,7 +22,7 @@ export function Login() {
     const { error } = await signIn(email, password)
     setSubmitting(false)
     if (error) {
-      setError('Wrong email or password.')
+      setError(error)
       return
     }
     navigate('/', { replace: true })
