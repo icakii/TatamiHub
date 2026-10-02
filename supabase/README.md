@@ -41,7 +41,7 @@ Run `tests/rls_test.sql` after the migrations and seed. It impersonates a Kime s
 
 ## 5. Make yourself a platform admin
 
-Sign up through the TatamiHub app once it's deployed, then find your user id under **Authentication -> Users** in the dashboard and run:
+Create an account at `/signup` in the TatamiHub app (this only creates a login, it doesn't grant access by itself), then find your user id under **Authentication -> Users** in the dashboard and run:
 
 ```sql
 insert into platform_admins (user_id) values ('YOUR-AUTH-USER-UUID');
