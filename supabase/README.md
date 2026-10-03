@@ -24,6 +24,8 @@ Open **SQL Editor** in the dashboard, and run these files in this exact order (p
 3. `migrations/0003_rls.sql` — enables RLS and creates every policy
 4. `migrations/0004_drop_self_claim.sql` — removes the invite-code/email self-claim functions and column. There's no public self-registration.
 5. `migrations/0005_guardian_info_and_lockdown.sql` — adds optional guardian/parent contact fields to `members`, and locks member writes down to platform admins only. Club staff can still read their own club's members (including guardian info); adding/editing members happens from TatamiHub, not the club site — a coach who wants a change calls/texts us.
+6. `migrations/0006_platform_billing.sql` — adds an optional discounted first-month price alongside the standard monthly price on `club_billing`.
+7. `migrations/0007_groups.sql` — adds a `groups` table (free-text name/description, e.g. by age or skill level) plus `group_id` on `members` and `classes`. Also locks `classes`/`class_notices` writes down to platform admins only, same rule as members — the schedule is Hub-managed now too.
 
 ## 3. Load the demo data (optional but recommended)
 
