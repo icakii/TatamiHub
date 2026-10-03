@@ -22,7 +22,7 @@ values (
   '{
     "colors": {"kuro": "#0E0E10", "shiro": "#F6F3EC", "aka": "#D2232A"},
     "logo": "enso",
-    "hero_bg": "ДИСЦИПЛИНА. ФОКУС. ПОЯС ПО ПОЯС.",
+    "hero_bg": "ДИСЦИПЛИНА. ФОКУС. КОЛАН ПО КОЛАН.",
     "hero_en": "DISCIPLINE. FOCUS. BELT BY BELT."
   }'::jsonb,
   'basic',
@@ -177,7 +177,7 @@ insert into payments (club_id, member_id, amount_cents, method, period_start, pe
 -- read their own coach notes. No fixed id, so clear first.
 delete from member_notes where club_id = 'c1000000-0000-4000-8000-000000000001';
 insert into member_notes (club_id, member_id, body, created_by) values
-  ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000003', 'Много добър напредък, готов е за следващия пояс.', 'a1000000-0000-4000-8000-000000000002');
+  ('c1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000003', 'Много добър напредък, готов е за следващия колан.', 'a1000000-0000-4000-8000-000000000002');
 
 -- Throwaway user with no membership anywhere, used only by
 -- supabase/tests/rls_test.sql to exercise the platform-admin path.
@@ -201,14 +201,14 @@ set theme = theme || jsonb_build_object(
       'name', 'Николай Тодоров',
       'title_bg', 'Основател и главен треньор',
       'title_en', 'Founder & head coach',
-      'bio_bg', 'Черен пояс, трети дан. Тренира деца и възрастни в Kime от основаването на клуба през 2019 г.',
+      'bio_bg', 'Черен колан, трети дан. Тренира деца и възрастни в Kime от основаването на клуба през 2019 г.',
       'bio_en', 'Black belt, 3rd dan. Has coached kids and adults at Kime since founding the club in 2019.'
     ),
     jsonb_build_object(
       'name', 'Елена Дичева',
       'title_bg', 'Треньор',
       'title_en', 'Coach',
-      'bio_bg', 'Черен пояс, първи дан. Води групите за начинаещи и следи индивидуалния напредък на всеки ученик.',
+      'bio_bg', 'Черен колан, първи дан. Води групите за начинаещи и следи индивидуалния напредък на всеки ученик.',
       'bio_en', 'Black belt, 1st dan. Runs the beginner classes and tracks each student''s individual progress.'
     )
   )
