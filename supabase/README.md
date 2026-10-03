@@ -56,11 +56,12 @@ admin panel, which calls `functions/create-member-account`. That function
 needs the `service_role` key to create another person's login, so it has to
 run on Supabase's servers, not in the browser — deploying it needs the CLI:
 
+No install needed — `npx` runs it on demand:
+
 ```bash
-npm install -g supabase
-supabase login
-supabase link --project-ref <your-project-ref>   # found in the dashboard URL
-supabase functions deploy create-member-account
+npx supabase login
+npx supabase link --project-ref <your-project-ref>   # found in the dashboard URL, e.g. oosgutqxpnvkfslxatyx
+npx supabase functions deploy create-member-account
 ```
 
 No manual secrets to set: Supabase automatically gives every Edge Function
@@ -80,8 +81,8 @@ API key that can't live in the browser:
 2. Deploy the function and set the secret:
 
 ```bash
-supabase functions deploy send-announcement
-supabase secrets set RESEND_API_KEY=<your-resend-api-key>
+npx supabase functions deploy send-announcement
+npx supabase secrets set RESEND_API_KEY=<your-resend-api-key>
 ```
 
 Sends come from `onboarding@resend.dev` until you verify your own domain in
