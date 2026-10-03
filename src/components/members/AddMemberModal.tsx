@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Modal } from '../Modal'
 import { useBelts, useCreateMemberAccount, useUpdateMember } from '../../hooks/useMembers'
+import { useGroups } from '../../hooks/useGroups'
 
 function randomPassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
@@ -11,6 +12,7 @@ function randomPassword(): string {
 
 export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: () => void }) {
   const { data: belts } = useBelts(clubId)
+  const { data: groups } = useGroups(clubId)
   const createAccount = useCreateMemberAccount(clubId)
   const updateMember = useUpdateMember(clubId)
 
@@ -18,6 +20,7 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState(randomPassword)
   const [beltId, setBeltId] = useState('')
+  const [groupId, setGroupId] = useState('')
   const [birthYear, setBirthYear] = useState('')
   const [phone, setPhone] = useState('')
   const [showGuardian, setShowGuardian] = useState(false)
@@ -38,6 +41,7 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
         email,
         password,
         belt_id: beltId || undefined,
+        group_id: groupId || undefined,
         birth_year: birthYear ? Number(birthYear) : undefined,
         phone: phone || undefined,
         guardian_consent: showGuardian && !!guardianFirstName,
@@ -120,6 +124,17 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
             {belts?.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name_bg}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Group">
+          <select value={groupId} onChange={(e) => setGroupId(e.target.value)} className={inputClass}>
+            <option value="">-</option>
+            {groups?.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
               </option>
             ))}
           </select>

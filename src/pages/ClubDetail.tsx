@@ -2,14 +2,17 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { AnnouncementComposer } from '../components/announcements/AnnouncementComposer'
 import { AnnouncementHistory } from '../components/announcements/AnnouncementHistory'
+import { GroupsTab } from '../components/groups/GroupsTab'
 import { AddMemberModal } from '../components/members/AddMemberModal'
 import { CreateLoginModal } from '../components/members/CreateLoginModal'
 import { EditGuardianModal } from '../components/members/EditGuardianModal'
+import { ScheduleTab } from '../components/schedule/ScheduleTab'
 import { useClub } from '../hooks/useClubs'
+import { useGroups } from '../hooks/useGroups'
 import { useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
 
 const STATUSES = ['active', 'trial', 'paused', 'left'] as const
-const TABS = ['members', 'announcements'] as const
+const TABS = ['members', 'groups', 'schedule', 'announcements'] as const
 type Tab = (typeof TABS)[number]
 
 export function ClubDetail() {
@@ -43,6 +46,8 @@ export function ClubDetail() {
       </nav>
 
       {tab === 'members' && <MembersTab clubId={clubId} />}
+      {tab === 'groups' && <GroupsTab clubId={clubId} />}
+      {tab === 'schedule' && <ScheduleTab clubId={clubId} />}
       {tab === 'announcements' && (
         <div className="mt-6">
           <AnnouncementComposer clubId={clubId} channels={club.channels} />
@@ -56,6 +61,7 @@ export function ClubDetail() {
 function MembersTab({ clubId }: { clubId: string }) {
   const { data: members, isLoading } = useMembers(clubId)
   const { data: belts } = useBelts(clubId)
+  const { data: groups } = useGroups(clubId)
   const updateMember = useUpdateMember(clubId)
 
   const [search, setSearch] = useState('')
@@ -87,11 +93,12 @@ function MembersTab({ clubId }: { clubId: string }) {
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-lg border border-line">
-        <table className="w-full min-w-[760px] border-collapse text-sm">
+        <table className="w-full min-w-[880px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-line bg-panel text-left text-xs uppercase tracking-wide text-muted">
               <th className="p-3">Name</th>
               <th className="p-3">Belt</th>
+              <th className="p-3">Group</th>
               <th className="p-3">Status</th>
               <th className="p-3">Guardian</th>
               <th className="p-3">Login</th>
@@ -100,7 +107,7 @@ function MembersTab({ clubId }: { clubId: string }) {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-muted">
+                <td colSpan={6} className="p-6 text-center text-muted">
                   ...
                 </td>
               </tr>
@@ -126,6 +133,25 @@ function MembersTab({ clubId }: { clubId: string }) {
                     {belts?.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.name_bg}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="p-3">
+                  <select
+                    value={m.group_id ?? ''}
+                    onChange={(e) =>
+                      updateMember.mutate({
+                        memberId: m.id,
+                        updates: { group_id: e.target.value || null },
+                      })
+                    }
+                    className="min-h-11 rounded-md border border-line bg-panel px-2 text-text"
+                  >
+                    <option value="">-</option>
+                    {groups?.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.name}
                       </option>
                     ))}
                   </select>

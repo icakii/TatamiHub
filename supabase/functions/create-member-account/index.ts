@@ -28,6 +28,7 @@ interface RequestBody {
   email: string
   password: string
   belt_id?: string
+  group_id?: string
   role?: 'student' | 'coach'
   birth_year?: number
   phone?: string
@@ -144,6 +145,7 @@ Deno.serve(async (req) => {
       full_name: body.full_name,
       email: body.email,
       belt_id: body.belt_id ?? null,
+      group_id: body.group_id ?? null,
       status: 'active',
       birth_year: body.birth_year ?? null,
       phone: body.phone ?? null,
