@@ -7,16 +7,12 @@
 // To/CC), using the club's name as the sender display name, with a contact
 // line since there's no unsubscribe flow yet.
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-function json(body: unknown, status: number) {
+function json(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...cors, 'Content-Type': 'application/json' },
   })
 }
 
@@ -26,16 +22,17 @@ interface Audience {
 }
 
 Deno.serve(async (req) => {
+  const cors = corsHeaders(req)
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: cors })
   }
   if (req.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405)
+    return json({ error: 'Method not allowed' }, 405, cors)
   }
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return json({ error: 'Missing Authorization header' }, 401)
+    return json({ error: 'Missing Authorization header' }, 401, cors)
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -50,17 +47,17 @@ Deno.serve(async (req) => {
     data: { user: caller },
   } = await callerClient.auth.getUser()
   if (!caller) {
-    return json({ error: 'Not authenticated' }, 401)
+    return json({ error: 'Not authenticated' }, 401, cors)
   }
 
   let body: { announcement_id: string }
   try {
     body = await req.json()
   } catch {
-    return json({ error: 'Invalid JSON body' }, 400)
+    return json({ error: 'Invalid JSON body' }, 400, cors)
   }
   if (!body.announcement_id) {
-    return json({ error: 'announcement_id is required' }, 400)
+    return json({ error: 'announcement_id is required' }, 400, cors)
   }
 
   // RLS on announcements (platform admin or club staff) already gates this
@@ -72,11 +69,11 @@ Deno.serve(async (req) => {
     .single()
 
   if (fetchError || !announcement) {
-    return json({ error: 'Announcement not found or not authorized' }, 404)
+    return json({ error: 'Announcement not found or not authorized' }, 404, cors)
   }
 
   if (!resendKey) {
-    return json({ error: 'Email is not configured yet (missing RESEND_API_KEY secret).' }, 500)
+    return json({ error: 'Email is not configured yet (missing RESEND_API_KEY secret).' }, 500, cors)
   }
 
   const audience = announcement.audience as Audience
@@ -92,7 +89,7 @@ Deno.serve(async (req) => {
 
   const { data: recipients, error: recipientsError } = await query
   if (recipientsError) {
-    return json({ error: recipientsError.message }, 500)
+    return json({ error: recipientsError.message }, 500, cors)
   }
 
   const clubName = (announcement.club as unknown as { name: string }).name
@@ -122,5 +119,5 @@ Deno.serve(async (req) => {
     .update({ sent_at: new Date().toISOString() })
     .eq('id', body.announcement_id)
 
-  return json({ sent, total: recipients?.length ?? 0 }, 200)
+  return json({ sent, total: recipients?.length ?? 0 }, 200, cors)
 })

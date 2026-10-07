@@ -64,11 +64,20 @@ npx supabase link --project-ref <your-project-ref>   # found in the dashboard UR
 npx supabase functions deploy create-member-account
 ```
 
-No manual secrets to set: Supabase automatically gives every Edge Function
-`SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as
-environment variables. The function itself checks the caller is an
-owner/coach of the target club (via `is_club_staff()`) before creating
-anything, so it's safe to leave publicly reachable.
+Supabase automatically gives every Edge Function `SUPABASE_URL`,
+`SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` as environment variables.
+The function itself checks the caller is an owner/coach of the target club
+(via `is_club_staff()`) before creating anything, so it's safe to leave
+publicly reachable. CORS is locked to TatamiHub's own origin via
+`_shared/cors.ts` — set the one manual secret below once you know the
+production URL (local dev works with no secret set):
+
+```bash
+npx supabase secrets set ALLOWED_ORIGINS=https://your-tatamihub-domain.com
+```
+
+Comma-separate multiple origins if you ever need more than one (e.g. a
+staging URL alongside production).
 
 ## 7. Deploy the announcement-email Edge Function
 
