@@ -9,7 +9,7 @@ export interface ClubBilling {
   build_fee_cents: number
   paid_until: string | null
   notes: string | null
-  club: { name: string }
+  club: { name: string; status: 'draft' | 'live' | 'paused' }
 }
 
 export function useBilling() {
@@ -19,7 +19,7 @@ export function useBilling() {
       const { data, error } = await supabase
         .from('club_billing')
         .select(
-          'club_id, plan, first_month_price_cents, monthly_price_cents, build_fee_cents, paid_until, notes, club:clubs(name)',
+          'club_id, plan, first_month_price_cents, monthly_price_cents, build_fee_cents, paid_until, notes, club:clubs(name, status)',
         )
         .order('paid_until')
       if (error) throw error

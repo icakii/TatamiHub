@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabaseClient'
 
 export interface ClubChannels {
@@ -43,5 +43,25 @@ export function useClub(clubId: string | undefined) {
       return data as unknown as ClubWithChannels
     },
     enabled: !!clubId,
+  })
+}
+
+export function useUpdateClubStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      clubId,
+      status,
+    }: {
+      clubId: string
+      status: 'live' | 'paused'
+    }) => {
+      const { error } = await supabase.from('clubs').update({ status }).eq('id', clubId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clubs'] })
+      queryClient.invalidateQueries({ queryKey: ['billing'] })
+    },
   })
 }
