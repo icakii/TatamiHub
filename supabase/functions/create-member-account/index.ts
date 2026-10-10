@@ -29,6 +29,7 @@ interface RequestBody {
   birth_year?: number
   phone?: string
   guardian_consent?: boolean
+  monthly_fee_cents?: number
 }
 
 Deno.serve(async (req) => {
@@ -143,6 +144,7 @@ Deno.serve(async (req) => {
       email: body.email,
       belt_id: body.belt_id ?? null,
       group_id: body.group_id ?? null,
+      monthly_fee_cents: body.monthly_fee_cents ?? null,
       status: 'active',
       birth_year: body.birth_year ?? null,
       phone: body.phone ?? null,

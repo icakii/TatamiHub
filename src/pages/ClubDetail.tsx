@@ -133,6 +133,7 @@ function MembersTab({ clubId }: { clubId: string }) {
               <th className="p-3">Name</th>
               <th className="p-3">Belt</th>
               <th className="p-3">Group</th>
+              <th className="p-3">Fee</th>
               <th className="p-3">Status</th>
               <th className="p-3">Guardian</th>
               <th className="p-3">Login</th>
@@ -141,7 +142,7 @@ function MembersTab({ clubId }: { clubId: string }) {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-muted">
+                <td colSpan={7} className="p-6 text-center text-muted">
                   ...
                 </td>
               </tr>
@@ -189,6 +190,25 @@ function MembersTab({ clubId }: { clubId: string }) {
                       </option>
                     ))}
                   </select>
+                </td>
+                <td className="p-3">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={m.monthly_fee_cents != null ? m.monthly_fee_cents / 100 : ''}
+                    onBlur={(e) =>
+                      updateMember.mutate({
+                        memberId: m.id,
+                        updates: {
+                          monthly_fee_cents: e.target.value
+                            ? Math.round(Number(e.target.value) * 100)
+                            : null,
+                        },
+                      })
+                    }
+                    className="min-h-11 w-20 rounded-md border border-line bg-panel px-2 text-text"
+                  />
                 </td>
                 <td className="p-3">
                   <select

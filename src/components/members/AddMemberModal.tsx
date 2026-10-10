@@ -21,6 +21,7 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
   const [password, setPassword] = useState(randomPassword)
   const [beltId, setBeltId] = useState('')
   const [groupId, setGroupId] = useState('')
+  const [monthlyFee, setMonthlyFee] = useState('')
   const [birthYear, setBirthYear] = useState('')
   const [phone, setPhone] = useState('')
   const [showGuardian, setShowGuardian] = useState(false)
@@ -42,6 +43,7 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
         password,
         belt_id: beltId || undefined,
         group_id: groupId || undefined,
+        monthly_fee_cents: monthlyFee ? Math.round(Number(monthlyFee) * 100) : undefined,
         birth_year: birthYear ? Number(birthYear) : undefined,
         phone: phone || undefined,
         guardian_consent: showGuardian && !!guardianFirstName,
@@ -138,6 +140,17 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
               </option>
             ))}
           </select>
+        </Field>
+
+        <Field label="Monthly fee (EUR)">
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={monthlyFee}
+            onChange={(e) => setMonthlyFee(e.target.value)}
+            className={inputClass}
+          />
         </Field>
 
         <Field label="Birth year">

@@ -23,6 +23,7 @@ export interface Member {
   guardian_last_name: string | null
   guardian_phone: string | null
   guardian_email: string | null
+  monthly_fee_cents: number | null
   belt: Belt | null
 }
 
@@ -33,7 +34,7 @@ export function useMembers(clubId: string | undefined) {
       const { data, error } = await supabase
         .from('members')
         .select(
-          'id, full_name, email, phone, role, status, birth_year, user_id, group_id, guardian_first_name, guardian_last_name, guardian_phone, guardian_email, belt:belts(id, rank, name_bg, name_en, color_hex)',
+          'id, full_name, email, phone, role, status, birth_year, user_id, group_id, guardian_first_name, guardian_last_name, guardian_phone, guardian_email, monthly_fee_cents, belt:belts(id, rank, name_bg, name_en, color_hex)',
         )
         .eq('club_id', clubId as string)
         .order('full_name')
@@ -76,6 +77,7 @@ export function useUpdateMember(clubId: string | undefined) {
         guardian_last_name: string | null
         guardian_phone: string | null
         guardian_email: string | null
+        monthly_fee_cents: number | null
       }>
     }) => {
       const { error } = await supabase.from('members').update(updates).eq('id', memberId)
@@ -99,6 +101,7 @@ interface CreateMemberAccountInput {
   birth_year?: number
   phone?: string
   guardian_consent?: boolean
+  monthly_fee_cents?: number
 }
 
 export function useCreateMemberAccount(clubId: string | undefined) {
