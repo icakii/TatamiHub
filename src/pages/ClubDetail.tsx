@@ -77,6 +77,7 @@ function OverviewTab({ clubId }: { clubId: string }) {
     { label: 'Unpaid fees', value: data.unpaidCount },
     { label: 'Trainings per week', value: data.trainingsPerWeek },
     { label: 'New members this month', value: `+${data.newThisMonth}` },
+    { label: 'Competitors (upcoming)', value: data.upcomingCompetitors },
   ]
 
   return (

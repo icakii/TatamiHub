@@ -7,6 +7,7 @@ export interface ClubOverview {
   trainingsPerWeek: number
   revenueThisMonthCents: number
   unpaidCount: number
+  upcomingCompetitors: number
 }
 
 function monthRange(date: Date): { start: string; end: string } {
@@ -67,12 +68,36 @@ export function useClubOverview(clubId: string | undefined) {
       )
       const unpaidCount = new Set((unpaid.data ?? []).map((row) => row.member_id)).size
 
+      // Separate query: competitors need the upcoming competition ids first,
+      // since PostgREST can't filter competition_entries by a joined table's
+      // column in one request.
+      const { data: upcomingCompetitions, error: upcomingError } = await supabase
+        .from('competitions')
+        .select('id')
+        .eq('club_id', clubId as string)
+        .gte('event_date', today)
+      if (upcomingError) throw upcomingError
+
+      let upcomingCompetitors = 0
+      if (upcomingCompetitions && upcomingCompetitions.length > 0) {
+        const { data: entries, error: entriesError } = await supabase
+          .from('competition_entries')
+          .select('member_id')
+          .in(
+            'competition_id',
+            upcomingCompetitions.map((c) => c.id),
+          )
+        if (entriesError) throw entriesError
+        upcomingCompetitors = new Set((entries ?? []).map((e) => e.member_id)).size
+      }
+
       return {
         activeMembers: activeMembers.count ?? 0,
         newThisMonth: newThisMonth.count ?? 0,
         trainingsPerWeek: trainingsPerWeek.count ?? 0,
         revenueThisMonthCents,
         unpaidCount,
+        upcomingCompetitors,
       }
     },
     enabled: !!clubId,
