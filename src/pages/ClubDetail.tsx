@@ -8,17 +8,18 @@ import { CreateLoginModal } from '../components/members/CreateLoginModal'
 import { EditGuardianModal } from '../components/members/EditGuardianModal'
 import { ScheduleTab } from '../components/schedule/ScheduleTab'
 import { useClub } from '../hooks/useClubs'
+import { useClubOverview } from '../hooks/useClubOverview'
 import { useGroups } from '../hooks/useGroups'
 import { useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
 
 const STATUSES = ['active', 'trial', 'paused', 'left'] as const
-const TABS = ['members', 'groups', 'schedule', 'announcements'] as const
+const TABS = ['overview', 'members', 'groups', 'schedule', 'announcements'] as const
 type Tab = (typeof TABS)[number]
 
 export function ClubDetail() {
   const { clubId } = useParams<{ clubId: string }>()
   const { data: club } = useClub(clubId)
-  const [tab, setTab] = useState<Tab>('members')
+  const [tab, setTab] = useState<Tab>('overview')
 
   if (!clubId || !club) return null
 
@@ -45,6 +46,7 @@ export function ClubDetail() {
         ))}
       </nav>
 
+      {tab === 'overview' && <OverviewTab clubId={clubId} />}
       {tab === 'members' && <MembersTab clubId={clubId} />}
       {tab === 'groups' && <GroupsTab clubId={clubId} />}
       {tab === 'schedule' && <ScheduleTab clubId={clubId} />}
@@ -54,6 +56,37 @@ export function ClubDetail() {
           <AnnouncementHistory clubId={clubId} />
         </div>
       )}
+    </div>
+  )
+}
+
+function formatEur(cents: number): string {
+  return `${(cents / 100).toFixed(2)} EUR`
+}
+
+function OverviewTab({ clubId }: { clubId: string }) {
+  const { data, isLoading } = useClubOverview(clubId)
+
+  if (isLoading || !data) {
+    return <p className="mt-6 text-sm text-muted">...</p>
+  }
+
+  const tiles = [
+    { label: 'Active members', value: data.activeMembers },
+    { label: 'Revenue this month', value: formatEur(data.revenueThisMonthCents) },
+    { label: 'Unpaid fees', value: data.unpaidCount },
+    { label: 'Trainings per week', value: data.trainingsPerWeek },
+    { label: 'New members this month', value: `+${data.newThisMonth}` },
+  ]
+
+  return (
+    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {tiles.map((tile) => (
+        <div key={tile.label} className="rounded-lg border border-line bg-panel p-4">
+          <p className="text-xs uppercase tracking-wide text-muted">{tile.label}</p>
+          <p className="mt-2 font-display text-2xl text-text">{tile.value}</p>
+        </div>
+      ))}
     </div>
   )
 }
