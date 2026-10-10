@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 const NAV = [
   { to: '/', end: true, label: 'Clubs' },
   { to: '/billing', end: false, label: 'Billing' },
+  { to: '/orders', label: 'Orders', end: false },
 ]
 
 export function HubLayout() {

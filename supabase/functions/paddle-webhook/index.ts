@@ -135,8 +135,39 @@ async function handleCustomer(db: any, customer: Record<string, unknown>) {
   await db.from('club_billing').update({ paddle_customer_id: customerId }).eq('club_id', owner.club_id)
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Subscriptions bought on the Tatami site carry the order id in
+// custom_data (set at checkout); keep that order's payment state in sync.
+// deno-lint-ignore no-explicit-any
+async function handleOrderSubscription(db: any, sub: Record<string, unknown>) {
+  const custom = sub.custom_data as { order_id?: unknown } | null
+  const orderId = custom?.order_id
+  if (typeof orderId !== 'string' || !UUID.test(orderId)) return
+
+  const status = sub.status as string | undefined
+  const period = sub.current_billing_period as { ends_at?: string } | null
+  const scheduled = sub.scheduled_change as { action?: string; effective_at?: string } | null
+
+  const { data: order } = await db.from('orders').select('status').eq('id', orderId).maybeSingle()
+  if (!order) return
+
+  const update: Record<string, unknown> = {
+    paddle_subscription_id: sub.id,
+    paddle_customer_id: sub.customer_id,
+    cancel_at: scheduled?.action === 'cancel' && scheduled.effective_at ? scheduled.effective_at.slice(0, 10) : null,
+  }
+  if (period?.ends_at) update.paid_until = period.ends_at.slice(0, 10)
+  if (status === 'canceled') update.status = 'cancelled'
+  else if ((status === 'active' || status === 'trialing') && order.status === 'pending_payment') update.status = 'paid'
+
+  await db.from('orders').update(update).eq('id', orderId)
+}
+
 // deno-lint-ignore no-explicit-any
 async function handleSubscription(db: any, sub: Record<string, unknown>) {
+  await handleOrderSubscription(db, sub)
+
   const customerId = sub.customer_id as string | undefined
   const subscriptionId = sub.id as string | undefined
   const status = sub.status as string | undefined

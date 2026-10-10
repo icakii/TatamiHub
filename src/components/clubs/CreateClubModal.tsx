@@ -24,15 +24,24 @@ function slugify(name: string): string {
 const inputClass =
   'mt-1 min-h-11 w-full rounded-md border border-line bg-ink px-3 text-text outline-none focus:border-hanko-text'
 
-export function CreateClubModal({ onClose }: { onClose: () => void }) {
+export function CreateClubModal({
+  onClose,
+  initial,
+  onCreated,
+}: {
+  onClose: () => void
+  // Prefill when a club is created from a Tatami-site order.
+  initial?: { name?: string; hostname?: string; monthlyEur?: number }
+  onCreated?: (clubId: string) => Promise<void> | void
+}) {
   const createClub = useCreateClub()
   const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
+  const [name, setName] = useState(initial?.name ?? '')
+  const [slug, setSlug] = useState(() => slugify(initial?.name ?? ''))
   const [slugTouched, setSlugTouched] = useState(false)
   const [locale, setLocale] = useState<'bg' | 'en'>('bg')
-  const [hostname, setHostname] = useState('')
-  const [price, setPrice] = useState('99')
+  const [hostname, setHostname] = useState(initial?.hostname ?? '')
+  const [price, setPrice] = useState(String(initial?.monthlyEur ?? 99))
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: FormEvent) {
@@ -46,6 +55,7 @@ export function CreateClubModal({ onClose }: { onClose: () => void }) {
         hostname: hostname.trim() || undefined,
         monthlyPriceCents: Math.round(Number(price) * 100),
       })
+      await onCreated?.(club.id)
       onClose()
       navigate(`/clubs/${club.id}`)
     } catch (err) {

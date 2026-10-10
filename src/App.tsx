@@ -6,6 +6,7 @@ import { Billing } from './pages/Billing'
 import { ClubDetail } from './pages/ClubDetail'
 import { Clubs } from './pages/Clubs'
 import { Login } from './pages/Login'
+import { Orders } from './pages/Orders'
 import { Signup } from './pages/Signup'
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <Route index element={<Clubs />} />
         <Route path="clubs/:clubId" element={<ClubDetail />} />
         <Route path="billing" element={<Billing />} />
+        <Route path="orders" element={<Orders />} />
       </Route>
     </Routes>
   )
