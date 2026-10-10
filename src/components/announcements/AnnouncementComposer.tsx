@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { ClubChannels } from '../../hooks/useClubs'
-import { useBelts } from '../../hooks/useMembers'
+import { beltLabel, useBelts } from '../../hooks/useMembers'
 import { useRecipientCount, useSendAnnouncement, type Audience } from '../../hooks/useAnnouncements'
 
 export function AnnouncementComposer({
@@ -119,7 +119,7 @@ export function AnnouncementComposer({
                   checked={selectedBelts.includes(belt.id)}
                   onChange={() => toggleBelt(belt.id)}
                 />
-                {belt.name_bg}
+                {beltLabel(belt)}
               </label>
             ))}
           </div>

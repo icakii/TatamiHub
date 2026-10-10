@@ -7,6 +7,12 @@ export interface Belt {
   name_bg: string
   name_en: string
   color_hex: string
+  grade_bg: string | null
+}
+
+// "Кафяво · 3 кю", or just the color when the club has no grades.
+export function beltLabel(b: Pick<Belt, 'name_bg' | 'grade_bg'>): string {
+  return b.grade_bg ? `${b.name_bg} · ${b.grade_bg}` : b.name_bg
 }
 
 export interface Member {
@@ -34,7 +40,7 @@ export function useMembers(clubId: string | undefined) {
       const { data, error } = await supabase
         .from('members')
         .select(
-          'id, full_name, email, phone, role, status, birth_year, user_id, group_id, guardian_first_name, guardian_last_name, guardian_phone, guardian_email, monthly_fee_cents, belt:belts(id, rank, name_bg, name_en, color_hex)',
+          'id, full_name, email, phone, role, status, birth_year, user_id, group_id, guardian_first_name, guardian_last_name, guardian_phone, guardian_email, monthly_fee_cents, belt:belts(id, rank, name_bg, name_en, color_hex, grade_bg)',
         )
         .eq('club_id', clubId as string)
         .order('full_name')
@@ -51,7 +57,7 @@ export function useBelts(clubId: string | undefined) {
     queryFn: async (): Promise<Belt[]> => {
       const { data, error } = await supabase
         .from('belts')
-        .select('id, rank, name_bg, name_en, color_hex')
+        .select('id, rank, name_bg, name_en, color_hex, grade_bg')
         .eq('club_id', clubId as string)
         .order('rank')
       if (error) throw error

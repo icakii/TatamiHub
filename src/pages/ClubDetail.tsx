@@ -14,7 +14,7 @@ import { StatTile, StatusBadge } from '../components/ui'
 import { useClub } from '../hooks/useClubs'
 import { useClubOverview } from '../hooks/useClubOverview'
 import { useGroups } from '../hooks/useGroups'
-import { useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
+import { beltLabel, useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
 
 const STATUSES = ['active', 'trial', 'paused', 'left'] as const
 const TABS = ['overview', 'members', 'payments', 'attendance', 'groups', 'schedule', 'competitions', 'announcements'] as const
@@ -182,7 +182,7 @@ function MembersTab({ clubId }: { clubId: string }) {
                     <option value="">-</option>
                     {belts?.map((b) => (
                       <option key={b.id} value={b.id}>
-                        {b.name_bg}
+                        {beltLabel(b)}
                       </option>
                     ))}
                   </select>

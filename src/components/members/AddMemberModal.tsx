@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Modal } from '../Modal'
-import { useBelts, useCreateMemberAccount, useUpdateMember } from '../../hooks/useMembers'
+import { beltLabel, useBelts, useCreateMemberAccount, useUpdateMember } from '../../hooks/useMembers'
 import { useGroups } from '../../hooks/useGroups'
 
 function randomPassword(): string {
@@ -125,7 +125,7 @@ export function AddMemberModal({ clubId, onClose }: { clubId: string; onClose: (
             <option value="">-</option>
             {belts?.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.name_bg}
+                {beltLabel(b)}
               </option>
             ))}
           </select>
