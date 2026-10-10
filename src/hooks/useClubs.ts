@@ -46,6 +46,35 @@ export function useClub(clubId: string | undefined) {
   })
 }
 
+// Atomic onboarding via the create_club() SQL function (0016): club row,
+// billing row, standard belt ladder and optional domain in one transaction.
+export function useCreateClub() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      name: string
+      slug: string
+      defaultLocale: 'bg' | 'en'
+      hostname?: string
+      monthlyPriceCents: number
+    }): Promise<Club> => {
+      const { data, error } = await supabase.rpc('create_club', {
+        p_name: input.name,
+        p_slug: input.slug,
+        p_default_locale: input.defaultLocale,
+        p_hostname: input.hostname || null,
+        p_monthly_price_cents: input.monthlyPriceCents,
+      })
+      if (error) throw error
+      return data as Club
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clubs'] })
+      queryClient.invalidateQueries({ queryKey: ['billing'] })
+    },
+  })
+}
+
 export function useUpdateClubStatus() {
   const queryClient = useQueryClient()
   return useMutation({

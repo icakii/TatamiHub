@@ -7,14 +7,16 @@ import { GroupsTab } from '../components/groups/GroupsTab'
 import { AddMemberModal } from '../components/members/AddMemberModal'
 import { CreateLoginModal } from '../components/members/CreateLoginModal'
 import { EditGuardianModal } from '../components/members/EditGuardianModal'
+import { PaymentsTab } from '../components/payments/PaymentsTab'
 import { ScheduleTab } from '../components/schedule/ScheduleTab'
+import { StatTile, StatusBadge } from '../components/ui'
 import { useClub } from '../hooks/useClubs'
 import { useClubOverview } from '../hooks/useClubOverview'
 import { useGroups } from '../hooks/useGroups'
 import { useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
 
 const STATUSES = ['active', 'trial', 'paused', 'left'] as const
-const TABS = ['overview', 'members', 'groups', 'schedule', 'competitions', 'announcements'] as const
+const TABS = ['overview', 'members', 'payments', 'groups', 'schedule', 'competitions', 'announcements'] as const
 type Tab = (typeof TABS)[number]
 
 export function ClubDetail() {
@@ -25,21 +27,32 @@ export function ClubDetail() {
   if (!clubId || !club) return null
 
   return (
-    <div className="px-6 py-6">
-      <Link to="/" className="text-xs uppercase tracking-wide text-muted hover:text-hanko-text">
+    <div className="px-6 py-8">
+      <Link to="/" className="text-xs uppercase tracking-wide text-muted transition-colors hover:text-hanko-text">
         &larr; Clubs
       </Link>
 
-      <h1 className="mt-2 font-display text-xl uppercase tracking-wide text-text">{club.name}</h1>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-md bg-raised font-display text-xl uppercase text-straw ring-1 ring-line">
+          {club.name.charAt(0)}
+        </span>
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-display text-2xl font-semibold uppercase tracking-wide text-text">{club.name}</h1>
+            <StatusBadge status={club.status} />
+          </div>
+          <p className="font-mono text-xs text-muted">{club.slug}</p>
+        </div>
+      </div>
 
-      <nav className="mt-4 flex gap-4 border-b border-line font-display text-xs uppercase tracking-wide">
+      <nav className="mt-6 flex gap-1 overflow-x-auto rounded-lg border border-line bg-panel p-1 font-display text-xs uppercase tracking-wider">
         {TABS.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`pb-2 ${
-              tab === t ? 'border-b-2 border-hanko text-text' : 'text-muted'
+            className={`shrink-0 rounded-md px-3.5 py-2 uppercase transition-colors ${
+              tab === t ? 'bg-raised text-text shadow-[inset_0_-2px_0_var(--color-hanko)]' : 'text-muted hover:text-text'
             }`}
           >
             {t}
@@ -49,6 +62,7 @@ export function ClubDetail() {
 
       {tab === 'overview' && <OverviewTab clubId={clubId} />}
       {tab === 'members' && <MembersTab clubId={clubId} />}
+      {tab === 'payments' && <PaymentsTab clubId={clubId} />}
       {tab === 'groups' && <GroupsTab clubId={clubId} />}
       {tab === 'schedule' && <ScheduleTab clubId={clubId} />}
       {tab === 'competitions' && <CompetitionsTab clubId={clubId} />}
@@ -74,21 +88,18 @@ function OverviewTab({ clubId }: { clubId: string }) {
   }
 
   const tiles = [
-    { label: 'Active members', value: data.activeMembers },
-    { label: 'Revenue this month', value: formatEur(data.revenueThisMonthCents) },
-    { label: 'Unpaid fees', value: data.unpaidCount },
-    { label: 'Trainings per week', value: data.trainingsPerWeek },
-    { label: 'New members this month', value: `+${data.newThisMonth}` },
-    { label: 'Competitors (upcoming)', value: data.upcomingCompetitors },
+    { label: 'Active members', value: data.activeMembers, accent: 'bg-sage' },
+    { label: 'Revenue this month', value: formatEur(data.revenueThisMonthCents), accent: 'bg-straw' },
+    { label: 'Unpaid fees', value: data.unpaidCount, accent: 'bg-hanko' },
+    { label: 'Trainings per week', value: data.trainingsPerWeek, accent: 'bg-amber' },
+    { label: 'New members this month', value: `+${data.newThisMonth}`, accent: 'bg-sage' },
+    { label: 'Competitors (upcoming)', value: data.upcomingCompetitors, accent: 'bg-amber' },
   ]
 
   return (
     <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
       {tiles.map((tile) => (
-        <div key={tile.label} className="rounded-lg border border-line bg-panel p-4">
-          <p className="text-xs uppercase tracking-wide text-muted">{tile.label}</p>
-          <p className="mt-2 font-display text-2xl text-text">{tile.value}</p>
-        </div>
+        <StatTile key={tile.label} label={tile.label} value={tile.value} accent={tile.accent} />
       ))}
     </div>
   )

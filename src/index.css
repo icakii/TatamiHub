@@ -15,6 +15,8 @@
 
   --font-sans: 'Onest', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Oswald', system-ui, sans-serif;
+  --font-brush: 'Yuji Syuku', serif;
 }
 
 body {
@@ -23,4 +25,42 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
   color-scheme: dark;
+}
+
+/* Small, quiet motion: pages and modals ease in, nothing loops. */
+@keyframes hub-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hub-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hub-enter {
+  animation: hub-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.hub-pop {
+  animation: hub-pop 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-enter,
+  .hub-pop {
+    animation: none;
+  }
 }

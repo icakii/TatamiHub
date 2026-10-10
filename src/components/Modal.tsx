@@ -21,7 +21,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-20 flex items-center justify-center bg-ink/80 px-6"
+      className="fixed inset-0 z-20 flex items-center justify-center bg-ink/80 px-6 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -29,7 +29,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-title"
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-lg border border-line bg-panel p-6"
+        className="hub-pop max-h-[85vh] w-full max-w-md overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-2xl"
       >
         <h2 id="modal-title" className="font-display text-lg uppercase tracking-wide text-text">
           {title}

@@ -1,5 +1,6 @@
 import { useBilling, useMarkPaid } from '../hooks/useBilling'
 import { useUpdateClubStatus } from '../hooks/useClubs'
+import { PageTitle, StatTile, StatusBadge } from '../components/ui'
 
 function formatPrice(cents: number): string {
   return `${(cents / 100).toFixed(2)} EUR`
@@ -11,15 +12,24 @@ export function Billing() {
   const updateStatus = useUpdateClubStatus()
   const today = new Date().toISOString().slice(0, 10)
 
-  return (
-    <div className="px-6 py-6">
-      <h1 className="font-display text-xl uppercase tracking-wide text-text">Billing</h1>
-      <p className="mt-1 text-sm text-muted">
-        What each club owes us. Tracking only — no automatic charging yet, mark a club paid once
-        you've received the transfer.
-      </p>
+  const live = (rows ?? []).filter((r) => r.club.status === 'live')
+  const mrrCents = live.reduce((sum, r) => sum + r.monthly_price_cents, 0)
+  const overdueCount = (rows ?? []).filter((r) => !r.paid_until || r.paid_until < today).length
 
-      <div className="mt-4 overflow-x-auto rounded-lg border border-line">
+  return (
+    <div className="px-6 py-8">
+      <PageTitle
+        title="Billing"
+        subtitle="What each club owes us. Paddle payments update this automatically; use Mark paid for bank transfers or cash."
+      />
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <StatTile label="Monthly recurring" value={formatPrice(mrrCents)} accent="bg-sage" hint="from live clubs" />
+        <StatTile label="Overdue" value={overdueCount} accent="bg-hanko" hint="clubs past their paid-until date" />
+        <StatTile label="Live clubs" value={`${live.length} / ${rows?.length ?? 0}`} accent="bg-straw" />
+      </div>
+
+      <div className="mt-6 overflow-x-auto rounded-lg border border-line">
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-line bg-panel text-left text-xs uppercase tracking-wide text-muted">
@@ -57,9 +67,7 @@ export function Billing() {
                     </span>
                   </td>
                   <td className="p-3">
-                    <span className={suspended ? 'text-hanko-text' : 'text-sage'}>
-                      {suspended ? 'Suspended' : 'Live'}
-                    </span>
+                    <StatusBadge status={row.club.status} label={suspended ? 'Suspended' : row.club.status} />
                   </td>
                   <td className="p-3">
                     <div className="flex gap-2">
@@ -76,13 +84,13 @@ export function Billing() {
                         onClick={() =>
                           updateStatus.mutate({
                             clubId: row.club_id,
-                            status: suspended ? 'live' : 'paused',
+                            status: row.club.status === 'live' ? 'paused' : 'live',
                           })
                         }
                         disabled={updateStatus.isPending}
                         className="min-h-11 rounded-md border border-line px-3 text-xs uppercase tracking-wide text-hanko-text disabled:opacity-60"
                       >
-                        {suspended ? 'Reactivate' : 'Suspend'}
+                        {row.club.status === 'live' ? 'Suspend' : suspended ? 'Reactivate' : 'Go live'}
                       </button>
                     </div>
                   </td>
