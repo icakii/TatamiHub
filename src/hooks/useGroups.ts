@@ -6,6 +6,7 @@ export interface Group {
   club_id: string
   name: string
   description: string | null
+  room: string | null
 }
 
 export function useGroups(clubId: string | undefined) {
@@ -14,7 +15,7 @@ export function useGroups(clubId: string | undefined) {
     queryFn: async (): Promise<Group[]> => {
       const { data, error } = await supabase
         .from('groups')
-        .select('id, club_id, name, description')
+        .select('id, club_id, name, description, room')
         .eq('club_id', clubId as string)
         .order('name')
       if (error) throw error
@@ -27,10 +28,10 @@ export function useGroups(clubId: string | undefined) {
 export function useCreateGroup(clubId: string | undefined) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: { name: string; description: string | null }) => {
+    mutationFn: async (input: { name: string; description: string | null; room: string | null }) => {
       const { error } = await supabase
         .from('groups')
-        .insert({ club_id: clubId, name: input.name, description: input.description })
+        .insert({ club_id: clubId, ...input })
       if (error) throw error
     },
     onSuccess: () => {
@@ -47,7 +48,7 @@ export function useUpdateGroup(clubId: string | undefined) {
       updates,
     }: {
       groupId: string
-      updates: Partial<{ name: string; description: string | null }>
+      updates: Partial<{ name: string; description: string | null; room: string | null }>
     }) => {
       const { error } = await supabase.from('groups').update(updates).eq('id', groupId)
       if (error) throw error

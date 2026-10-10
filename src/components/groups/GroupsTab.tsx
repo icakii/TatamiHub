@@ -44,6 +44,7 @@ export function GroupsTab({ clubId }: { clubId: string }) {
           <div key={g.id} className="flex items-start justify-between gap-3 p-4">
             <div>
               <p className="text-text">{g.name}</p>
+              {g.room && <p className="mt-1 text-xs uppercase tracking-wide text-straw">{g.room}</p>}
               {g.description && <p className="mt-1 text-sm text-muted">{g.description}</p>}
             </div>
             <div className="flex shrink-0 gap-2 text-xs uppercase tracking-wide">

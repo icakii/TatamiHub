@@ -176,7 +176,14 @@ export function ScheduleTab({ clubId }: { clubId: string }) {
                 <td className="p-3 text-muted">
                   {WEEKDAYS[cls.weekday]} · {cls.start_time.slice(0, 5)} · {cls.duration_min} min
                 </td>
-                <td className="p-3 text-muted">{groupName(cls.group_id)}</td>
+                <td className="p-3 text-muted">
+                  {groupName(cls.group_id)}
+                  {(cls.room ?? groups?.find((g) => g.id === cls.group_id)?.room) && (
+                    <span className="ml-2 rounded bg-raised px-1.5 py-0.5 text-[11px] uppercase text-straw">
+                      {cls.room ?? groups?.find((g) => g.id === cls.group_id)?.room}
+                    </span>
+                  )}
+                </td>
                 <td className="p-3">
                   <div className="flex gap-2 text-xs uppercase tracking-wide">
                     <button

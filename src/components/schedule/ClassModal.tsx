@@ -23,6 +23,7 @@ export function ClassModal({
   const [startTime, setStartTime] = useState(cls?.start_time?.slice(0, 5) ?? '18:00')
   const [durationMin, setDurationMin] = useState(cls?.duration_min ?? 60)
   const [groupId, setGroupId] = useState(cls?.group_id ?? '')
+  const [room, setRoom] = useState(cls?.room ?? '')
   const [error, setError] = useState<string | null>(null)
 
   const pending = createClass.isPending || updateClass.isPending
@@ -36,6 +37,7 @@ export function ClassModal({
       start_time: startTime,
       duration_min: durationMin,
       group_id: groupId || null,
+      room: room.trim() || null,
     }
     try {
       if (cls) {
@@ -119,6 +121,19 @@ export function ClassModal({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="block">
+          <span className="block text-xs uppercase tracking-wide text-muted">
+            Hall / room (optional, overrides the group&apos;s)
+          </span>
+          <input
+            value={room}
+            maxLength={40}
+            placeholder={groups?.find((g) => g.id === groupId)?.room ?? 'e.g. Зала 1'}
+            onChange={(e) => setRoom(e.target.value)}
+            className="mt-1 min-h-11 w-full rounded-md border border-line bg-ink px-3 text-text outline-none focus:border-hanko-text"
+          />
         </label>
 
         {error && <p className="text-sm text-hanko-text">{error}</p>}

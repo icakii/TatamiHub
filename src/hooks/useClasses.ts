@@ -10,6 +10,7 @@ export interface ClassRow {
   belt_min_rank: number | null
   belt_max_rank: number | null
   group_id: string | null
+  room: string | null
 }
 
 export function useClasses(clubId: string | undefined) {
@@ -18,7 +19,7 @@ export function useClasses(clubId: string | undefined) {
     queryFn: async (): Promise<ClassRow[]> => {
       const { data, error } = await supabase
         .from('classes')
-        .select('id, title, weekday, start_time, duration_min, belt_min_rank, belt_max_rank, group_id')
+        .select('id, title, weekday, start_time, duration_min, belt_min_rank, belt_max_rank, group_id, room')
         .eq('club_id', clubId as string)
         .order('weekday')
         .order('start_time')
@@ -35,6 +36,7 @@ interface ClassInput {
   start_time: string
   duration_min: number
   group_id: string | null
+  room: string | null
 }
 
 export function useCreateClass(clubId: string | undefined) {

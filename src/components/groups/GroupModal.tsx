@@ -16,6 +16,7 @@ export function GroupModal({
 
   const [name, setName] = useState(group?.name ?? '')
   const [description, setDescription] = useState(group?.description ?? '')
+  const [room, setRoom] = useState(group?.room ?? '')
   const [error, setError] = useState<string | null>(null)
 
   const pending = createGroup.isPending || updateGroup.isPending
@@ -27,10 +28,10 @@ export function GroupModal({
       if (group) {
         await updateGroup.mutateAsync({
           groupId: group.id,
-          updates: { name, description: description || null },
+          updates: { name, description: description || null, room: room.trim() || null },
         })
       } else {
-        await createGroup.mutateAsync({ name, description: description || null })
+        await createGroup.mutateAsync({ name, description: description || null, room: room.trim() || null })
       }
       onClose()
     } catch (err) {
@@ -47,6 +48,16 @@ export function GroupModal({
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="mt-1 min-h-11 w-full rounded-md border border-line bg-ink px-3 text-text outline-none focus:border-hanko-text"
+          />
+        </label>
+        <label className="block">
+          <span className="block text-xs uppercase tracking-wide text-muted">Hall / room (optional)</span>
+          <input
+            value={room}
+            maxLength={40}
+            placeholder="e.g. Зала 2"
+            onChange={(e) => setRoom(e.target.value)}
             className="mt-1 min-h-11 w-full rounded-md border border-line bg-ink px-3 text-text outline-none focus:border-hanko-text"
           />
         </label>
