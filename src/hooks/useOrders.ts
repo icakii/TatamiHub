@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 // Orders placed on the public Tatami site. Payment fields are written by the
 // paddle-webhook function; founders move the status along from here.
 
-export type OrderStatus = 'pending_payment' | 'paid' | 'in_progress' | 'live' | 'cancelled'
+export type OrderStatus = 'inquiry' | 'pending_payment' | 'paid' | 'in_progress' | 'live' | 'cancelled'
 
 export interface Order {
   id: string

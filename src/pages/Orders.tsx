@@ -5,6 +5,7 @@ import { PageTitle, StatTile, StatusBadge } from '../components/ui'
 import { useOrders, useUpdateOrder, type Order, type OrderStatus } from '../hooks/useOrders'
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
+  inquiry: 'inquiry',
   pending_payment: 'awaiting payment',
   paid: 'paid',
   in_progress: 'in progress',
@@ -14,6 +15,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 // Maps onto StatusBadge's color groups.
 const BADGE: Record<OrderStatus, string> = {
+  inquiry: 'trial',
   pending_payment: 'due',
   paid: 'paid',
   in_progress: 'trial',
@@ -49,10 +51,11 @@ export function Orders() {
   const toBuild = all.filter((o) => o.status === 'paid').length
   const inProgress = all.filter((o) => o.status === 'in_progress').length
   const awaiting = all.filter((o) => o.status === 'pending_payment').length
+  const inquiries = all.filter((o) => o.status === 'inquiry').length
 
   return (
     <div className="px-6 py-8">
-      <PageTitle title="Orders" subtitle="Placed and paid on the Tatami site. Paid orders are waiting for us to build the club.">
+      <PageTitle title="Orders" subtitle="From the Tatami site. Answer inquiries first, agree on extras, then approve them for payment.">
         <div className="flex gap-1 rounded-lg border border-line bg-panel p-1 font-display text-xs uppercase tracking-wider">
           {FILTERS.map((f) => (
             <button
@@ -69,7 +72,8 @@ export function Orders() {
         </div>
       </PageTitle>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatTile label="Inquiries" value={inquiries} accent="bg-straw" hint="reply within 1 business day" />
         <StatTile label="To build" value={toBuild} accent="bg-hanko" hint="paid, nobody started yet" />
         <StatTile label="In progress" value={inProgress} accent="bg-straw" />
         <StatTile label="Awaiting payment" value={awaiting} accent="bg-sage" hint="started checkout, not paid" />
@@ -129,7 +133,8 @@ export function Orders() {
                 </Link>
               ) : (
                 o.status !== 'cancelled' &&
-                o.status !== 'pending_payment' && (
+                o.status !== 'pending_payment' &&
+                o.status !== 'inquiry' && (
                   <button
                     type="button"
                     onClick={() => setCreatingFrom(o)}
@@ -138,6 +143,23 @@ export function Orders() {
                     Create club from order
                   </button>
                 )
+              )}
+              {o.status === 'inquiry' && (
+                <>
+                  <a
+                    href={`mailto:${o.email}?subject=${encodeURIComponent('Tatami: ' + o.club_name)}`}
+                    className="min-h-9 rounded-md border border-line px-3 py-2 text-xs uppercase tracking-wide text-text hover:border-straw/50"
+                  >
+                    Reply by email
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => updateOrder.mutate({ id: o.id, updates: { status: 'pending_payment' } })}
+                    className="min-h-9 rounded-md bg-hanko px-3 text-xs uppercase tracking-wide text-text"
+                  >
+                    Approve for payment
+                  </button>
+                </>
               )}
               {o.status === 'in_progress' && (
                 <button
