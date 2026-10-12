@@ -11,7 +11,7 @@ import { EditGuardianModal } from '../components/members/EditGuardianModal'
 import { PaymentsTab } from '../components/payments/PaymentsTab'
 import { ScheduleTab } from '../components/schedule/ScheduleTab'
 import { StatTile, StatusBadge } from '../components/ui'
-import { useClub } from '../hooks/useClubs'
+import { useClub, useSetSelfService } from '../hooks/useClubs'
 import { useClubOverview } from '../hooks/useClubOverview'
 import { useGroups } from '../hooks/useGroups'
 import { beltLabel, useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
@@ -24,6 +24,7 @@ export function ClubDetail() {
   const { clubId } = useParams<{ clubId: string }>()
   const { data: club } = useClub(clubId)
   const [tab, setTab] = useState<Tab>('overview')
+  const setSelfService = useSetSelfService()
 
   if (!clubId || !club) return null
 
@@ -43,6 +44,22 @@ export function ClubDetail() {
             <StatusBadge status={club.status} />
           </div>
           <p className="font-mono text-xs text-muted">{club.slug}</p>
+        </div>
+        {/* Plan: Клуб = the club manages itself, Клуб Pro = we do it here. */}
+        <div className="ml-auto flex rounded-lg border border-line bg-panel p-1 font-display text-xs uppercase tracking-wider">
+          {([false, true] as const).map((selfService) => (
+            <button
+              key={String(selfService)}
+              type="button"
+              onClick={() => setSelfService.mutate({ clubId, selfService })}
+              className={`rounded-md px-3 py-1.5 uppercase transition-colors ${
+                club.self_service === selfService ? 'bg-raised text-text' : 'text-muted hover:text-text'
+              }`}
+              title={selfService ? 'Club staff add students, change belts and edit the schedule' : 'We manage everything from the Hub'}
+            >
+              {selfService ? 'Клуб · self-service' : 'Клуб Pro · managed'}
+            </button>
+          ))}
         </div>
       </div>
 

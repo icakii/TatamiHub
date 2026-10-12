@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react'
 
 // The Hub's seal mark: 畳 (tatami) in a hanko-red square.
-export function SealMark({ className = 'h-7 w-7 text-base' }: { className?: string }) {
+// The Tatami mark: four mats in a pinwheel around a half mat, on a hanko-red
+// tile. Same geometry as the favicon and the hero illustration.
+export function SealMark({ className = 'h-8 w-8' }: { className?: string }) {
   return (
-    <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-[5px] bg-hanko font-brush leading-none text-text shadow-[0_4px_12px_-4px_rgba(214,63,37,0.8)] ${className}`}
-      aria-hidden="true"
-    >
-      畳
-    </span>
+    <svg viewBox="0 0 64 64" className={`shrink-0 drop-shadow-[0_6px_14px_rgba(194,54,31,0.55)] ${className}`} aria-hidden="true">
+      <rect width="64" height="64" rx="14" fill="#c2361f" />
+      <rect x="13.00" y="13.00" width="24.67" height="11.33" rx="1.6" fill="#fbf6ea" /><rect x="39.67" y="13.00" width="11.33" height="24.67" rx="1.6" fill="#fbf6ea" /><rect x="26.33" y="39.67" width="24.67" height="11.33" rx="1.6" fill="#fbf6ea" /><rect x="13.00" y="26.33" width="11.33" height="24.67" rx="1.6" fill="#fbf6ea" /><rect x="26.33" y="26.33" width="11.33" height="11.33" rx="1.6" fill="#d9b66b" />
+    </svg>
   )
 }
 
