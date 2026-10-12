@@ -12,6 +12,7 @@ export interface Order {
   email: string
   phone: string | null
   club_name: string
+  plan: 'site' | 'club' | 'club_pro' | 'store' | 'custom'
   city: string | null
   student_count: number | null
   domain_option: 'subdomain' | 'own' | 'new'
@@ -32,7 +33,7 @@ export function useOrders() {
       const { data, error } = await supabase
         .from('orders')
         .select(
-          'id, contact_name, email, phone, club_name, city, student_count, domain_option, domain, notes, status, paid_until, cancel_at, paddle_subscription_id, club_id, created_at',
+          'id, contact_name, email, phone, club_name, plan, city, student_count, domain_option, domain, notes, status, paid_until, cancel_at, paddle_subscription_id, club_id, created_at',
         )
         .order('created_at', { ascending: false })
       if (error) throw error

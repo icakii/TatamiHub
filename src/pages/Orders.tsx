@@ -29,6 +29,15 @@ const DOMAIN_LABEL: Record<Order['domain_option'], string> = {
   new: 'New domain (+10 EUR/mo)',
 }
 
+// Plan ladder (VAT included). Quoted plans show the starting price.
+const PLAN_INFO: Record<Order['plan'], { label: string; monthly: number }> = {
+  site: { label: 'Сайт · 250 € + 29 €/mo', monthly: 29 },
+  club: { label: 'Клуб · 350 € + 99 €/mo', monthly: 99 },
+  club_pro: { label: 'Клуб Pro · 650 € + 149 €/mo', monthly: 149 },
+  store: { label: 'Онлайн магазин · quote (from 800 € + 79 €/mo)', monthly: 79 },
+  custom: { label: 'Custom система · quote (from 1500 € + 149 €/mo)', monthly: 149 },
+}
+
 const FILTERS = ['active', 'all'] as const
 
 function Detail({ label, children }: { label: string; children: React.ReactNode }) {
@@ -101,6 +110,9 @@ export function Orders() {
             </div>
 
             <div className="mt-4 grid gap-4 border-t border-line pt-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Detail label="Plan">
+                <span className="text-straw">{PLAN_INFO[o.plan ?? 'club'].label}</span>
+              </Detail>
               <Detail label="Contact">{o.contact_name}</Detail>
               <Detail label="Email">
                 <a href={`mailto:${o.email}`} className="hover:text-hanko-text">
@@ -180,7 +192,7 @@ export function Orders() {
           initial={{
             name: creatingFrom.club_name,
             hostname: creatingFrom.domain_option === 'subdomain' ? undefined : (creatingFrom.domain ?? undefined),
-            monthlyEur: creatingFrom.domain_option === 'new' ? 109 : 99,
+            monthlyEur: PLAN_INFO[creatingFrom.plan ?? 'club'].monthly + (creatingFrom.domain_option === 'new' ? 10 : 0),
           }}
           onCreated={(clubId) =>
             updateOrder.mutateAsync({ id: creatingFrom.id, updates: { club_id: clubId, status: 'in_progress' } })
