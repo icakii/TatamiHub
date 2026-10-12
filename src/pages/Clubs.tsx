@@ -4,12 +4,13 @@ import { CreateClubModal } from '../components/clubs/CreateClubModal'
 import { PageTitle, StatusBadge } from '../components/ui'
 import { useBilling } from '../hooks/useBilling'
 import { useClubs } from '../hooks/useClubs'
+import { localISODate } from '../lib/date'
 
 export function Clubs() {
   const { data: clubs, isLoading } = useClubs()
   const { data: billing } = useBilling()
   const [showCreate, setShowCreate] = useState(false)
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localISODate()
 
   const billingByClub = new Map((billing ?? []).map((b) => [b.club_id, b]))
 

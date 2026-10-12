@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabaseClient'
+import { localISODate } from '../lib/date'
 
 // Student dues (members paying their club), as opposed to useBilling (clubs
 // paying us). Same `payments` table KimeClub's coach panel records into.
@@ -45,7 +46,7 @@ function nextPeriod(paidThrough: string | undefined): { start: string; end: stri
   const end = new Date(start)
   end.setMonth(end.getMonth() + 1)
   end.setDate(end.getDate() - 1)
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) }
+  return { start: localISODate(start), end: localISODate(end) }
 }
 
 export function useRecordDuesPayment(clubId: string | undefined) {

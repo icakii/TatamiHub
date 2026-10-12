@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { StatTile, StatusBadge } from '../ui'
 import { useClubPayments, useRecordDuesPayment, type DuesPayment } from '../../hooks/useDues'
 import { useMembers } from '../../hooks/useMembers'
+import { localISODate } from '../../lib/date'
 
 const METHODS: DuesPayment['method'][] = ['cash', 'bank', 'card', 'online']
 
@@ -14,7 +15,7 @@ export function PaymentsTab({ clubId }: { clubId: string }) {
   const { data: payments, isLoading } = useClubPayments(clubId)
   const record = useRecordDuesPayment(clubId)
   const [methodFor, setMethodFor] = useState<Record<string, DuesPayment['method']>>({})
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localISODate()
 
   const paidThrough = useMemo(() => {
     const map = new Map<string, string>()

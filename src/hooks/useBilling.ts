@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabaseClient'
+import { localISODate } from '../lib/date'
 
 export interface ClubBilling {
   club_id: string
@@ -45,7 +46,7 @@ export function useMarkPaid() {
 
       const { error } = await supabase
         .from('club_billing')
-        .update({ paid_until: next.toISOString().slice(0, 10) })
+        .update({ paid_until: localISODate(next) })
         .eq('club_id', clubId)
       if (error) throw error
     },

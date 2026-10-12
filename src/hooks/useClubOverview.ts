@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabaseClient'
+import { localISODate } from '../lib/date'
 
 export interface ClubOverview {
   activeMembers: number
@@ -13,14 +14,14 @@ export interface ClubOverview {
 function monthRange(date: Date): { start: string; end: string } {
   const start = new Date(date.getFullYear(), date.getMonth(), 1)
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0)
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) }
+  return { start: localISODate(start), end: localISODate(end) }
 }
 
 export function useClubOverview(clubId: string | undefined) {
   return useQuery({
     queryKey: ['club-overview', clubId],
     queryFn: async (): Promise<ClubOverview> => {
-      const today = new Date().toISOString().slice(0, 10)
+      const today = localISODate()
       const { start: monthStart, end: monthEnd } = monthRange(new Date())
 
       const [activeMembers, newThisMonth, trainingsPerWeek, paidThisMonth, unpaid] =

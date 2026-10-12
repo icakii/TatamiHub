@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react'
 import { StatTile } from '../ui'
 import { useClubAttendance } from '../../hooks/useAttendance'
 import { useMembers } from '../../hooks/useMembers'
+import { localISODate } from '../../lib/date'
 
 const RANGES = [7, 30, 90] as const
 
 function daysAgo(days: number): string {
   const d = new Date()
   d.setDate(d.getDate() - days)
-  return d.toISOString().slice(0, 10)
+  return localISODate(d)
 }
 
 export function AttendanceTab({ clubId }: { clubId: string }) {

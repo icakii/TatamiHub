@@ -1,6 +1,7 @@
 import { useBilling, useMarkPaid } from '../hooks/useBilling'
 import { useUpdateClubStatus } from '../hooks/useClubs'
 import { PageTitle, StatTile, StatusBadge } from '../components/ui'
+import { localISODate } from '../lib/date'
 
 function formatPrice(cents: number): string {
   return `${(cents / 100).toFixed(2)} EUR`
@@ -10,7 +11,7 @@ export function Billing() {
   const { data: rows, isLoading } = useBilling()
   const markPaid = useMarkPaid()
   const updateStatus = useUpdateClubStatus()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localISODate()
 
   const live = (rows ?? []).filter((r) => r.club.status === 'live')
   const mrrCents = live.reduce((sum, r) => sum + r.monthly_price_cents, 0)
