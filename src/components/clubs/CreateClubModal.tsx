@@ -41,7 +41,7 @@ export function CreateClubModal({
   const [slugTouched, setSlugTouched] = useState(false)
   const [locale, setLocale] = useState<'bg' | 'en'>('bg')
   const [hostname, setHostname] = useState(initial?.hostname ?? '')
-  const [price, setPrice] = useState(String(initial?.monthlyEur ?? 99))
+  const [price, setPrice] = useState(String(initial?.monthlyEur ?? 110))
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: FormEvent) {

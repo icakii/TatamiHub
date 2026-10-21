@@ -7,11 +7,11 @@ import { CompetitionsTab } from '../components/competitions/CompetitionsTab'
 import { GroupsTab } from '../components/groups/GroupsTab'
 import { AddMemberModal } from '../components/members/AddMemberModal'
 import { CreateLoginModal } from '../components/members/CreateLoginModal'
-import { EditGuardianModal } from '../components/members/EditGuardianModal'
+import { EditMemberModal } from '../components/members/EditMemberModal'
 import { PaymentsTab } from '../components/payments/PaymentsTab'
 import { ScheduleTab } from '../components/schedule/ScheduleTab'
 import { StatTile, StatusBadge } from '../components/ui'
-import { useClub, useSetSelfService } from '../hooks/useClubs'
+import { useClub, useSetClubOption, type ClubOption } from '../hooks/useClubs'
 import { useClubOverview } from '../hooks/useClubOverview'
 import { useGroups } from '../hooks/useGroups'
 import { beltLabel, useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
@@ -20,11 +20,17 @@ const STATUSES = ['active', 'trial', 'paused', 'left'] as const
 const TABS = ['overview', 'members', 'payments', 'attendance', 'groups', 'schedule', 'competitions', 'announcements'] as const
 type Tab = (typeof TABS)[number]
 
+const CLUB_OPTIONS: { key: ClubOption; label: string; hint: string }[] = [
+  { key: 'grades_enabled', label: 'Grades ★', hint: 'Coaches give students 1-5 star grades; students see them in the app' },
+  { key: 'qr_checkin_enabled', label: 'QR check-in', hint: 'A QR code in the hall; students scan it and are marked present' },
+  { key: 'store_enabled', label: 'Store', hint: 'Students reserve kit on the site; the coach sees it with height and age' },
+]
+
 export function ClubDetail() {
   const { clubId } = useParams<{ clubId: string }>()
   const { data: club } = useClub(clubId)
   const [tab, setTab] = useState<Tab>('overview')
-  const setSelfService = useSetSelfService()
+  const setOption = useSetClubOption()
 
   if (!clubId || !club) return null
 
@@ -45,21 +51,26 @@ export function ClubDetail() {
           </div>
           <p className="font-mono text-xs text-muted">{club.slug}</p>
         </div>
-        {/* Plan: Клуб = the club manages itself, Клуб Pro = we do it here. */}
-        <div className="ml-auto flex rounded-lg border border-line bg-panel p-1 font-display text-xs uppercase tracking-wider">
-          {([false, true] as const).map((selfService) => (
-            <button
-              key={String(selfService)}
-              type="button"
-              onClick={() => setSelfService.mutate({ clubId, selfService })}
-              className={`rounded-md px-3 py-1.5 uppercase transition-colors ${
-                club.self_service === selfService ? 'bg-raised text-text' : 'text-muted hover:text-text'
-              }`}
-              title={selfService ? 'Club staff add students, change belts and edit the schedule' : 'We manage everything from the Hub'}
-            >
-              {selfService ? 'Клуб · self-service' : 'Клуб Pro · managed'}
-            </button>
-          ))}
+        {/* Optional extras. Everything else is ours to enter, on every plan. */}
+        <div className="ml-auto flex flex-wrap gap-1 rounded-lg border border-line bg-panel p-1 font-display text-xs uppercase tracking-wider">
+          {CLUB_OPTIONS.map((o) => {
+            const on = club[o.key]
+            return (
+              <button
+                key={o.key}
+                type="button"
+                onClick={() => setOption.mutate({ clubId, option: o.key, value: !on })}
+                className={`flex items-center gap-2 rounded-md px-3 py-1.5 uppercase transition-colors ${
+                  on ? 'bg-raised text-text' : 'text-muted hover:text-text'
+                }`}
+                title={o.hint}
+                aria-pressed={on}
+              >
+                <span className={`h-2 w-2 rounded-full ${on ? 'bg-sage' : 'bg-line'}`} />
+                {o.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -133,7 +144,7 @@ function MembersTab({ clubId }: { clubId: string }) {
   const [search, setSearch] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
   const [loginTarget, setLoginTarget] = useState<Member | null>(null)
-  const [guardianTarget, setGuardianTarget] = useState<Member | null>(null)
+  const [editTarget, setEditTarget] = useState<Member | null>(null)
 
   const filtered = useMemo(() => {
     if (!search) return members ?? []
@@ -182,8 +193,16 @@ function MembersTab({ clubId }: { clubId: string }) {
             {filtered.map((m) => (
               <tr key={m.id} className="border-b border-line last:border-0">
                 <td className="p-3">
-                  <p className="text-text">{m.full_name}</p>
-                  <p className="text-xs capitalize text-muted">{m.role}</p>
+                  <button type="button" onClick={() => setEditTarget(m)} className="group text-left">
+                    <p className="text-text group-hover:text-hanko-text">
+                      {m.full_name} <span className="text-xs text-muted">✎</span>
+                    </p>
+                    <p className="text-xs capitalize text-muted">
+                      {m.role}
+                      {m.height_cm ? ` · ${m.height_cm} cm` : ''}
+                      {m.photo_path ? ' · 📷' : ''}
+                    </p>
+                  </button>
                 </td>
                 <td className="p-3">
                   <select
@@ -263,7 +282,7 @@ function MembersTab({ clubId }: { clubId: string }) {
                 <td className="p-3">
                   <button
                     type="button"
-                    onClick={() => setGuardianTarget(m)}
+                    onClick={() => setEditTarget(m)}
                     className="text-left text-xs text-muted hover:text-hanko-text"
                   >
                     {m.guardian_first_name
@@ -294,11 +313,11 @@ function MembersTab({ clubId }: { clubId: string }) {
       {loginTarget && (
         <CreateLoginModal clubId={clubId} member={loginTarget} onClose={() => setLoginTarget(null)} />
       )}
-      {guardianTarget && (
-        <EditGuardianModal
+      {editTarget && (
+        <EditMemberModal
           clubId={clubId}
-          member={guardianTarget}
-          onClose={() => setGuardianTarget(null)}
+          member={editTarget}
+          onClose={() => setEditTarget(null)}
         />
       )}
     </div>

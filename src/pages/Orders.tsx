@@ -32,7 +32,7 @@ const DOMAIN_LABEL: Record<Order['domain_option'], string> = {
 // Plan ladder (VAT included). Quoted plans show the starting price.
 const PLAN_INFO: Record<Order['plan'], { label: string; monthly: number }> = {
   site: { label: 'Сайт · 250 € + 29 €/mo', monthly: 29 },
-  club: { label: 'Клуб · 350 € + 99 €/mo', monthly: 99 },
+  club: { label: 'Клуб · 350 € + 110 €/mo', monthly: 110 },
   club_pro: { label: 'Клуб Pro · 650 € + 149 €/mo', monthly: 149 },
   store: { label: 'Онлайн магазин · quote (from 800 € + 79 €/mo)', monthly: 79 },
   custom: { label: 'Custom система · quote (from 1500 € + 149 €/mo)', monthly: 149 },

@@ -17,9 +17,13 @@ export interface Club {
 
 export interface ClubWithChannels extends Club {
   channels: ClubChannels
-  // "Клуб" plan: the club manages students and its schedule itself.
-  self_service: boolean
+  // Optional extras on the club's site and app.
+  grades_enabled: boolean
+  qr_checkin_enabled: boolean
+  store_enabled: boolean
 }
+
+export type ClubOption = 'grades_enabled' | 'qr_checkin_enabled' | 'store_enabled'
 
 export function useClubs() {
   return useQuery({
@@ -38,7 +42,7 @@ export function useClub(clubId: string | undefined) {
     queryFn: async (): Promise<ClubWithChannels> => {
       const { data, error } = await supabase
         .from('clubs')
-        .select('id, slug, name, status, channels, self_service')
+        .select('id, slug, name, status, channels, grades_enabled, qr_checkin_enabled, store_enabled')
         .eq('id', clubId as string)
         .single()
       if (error) throw error
@@ -97,11 +101,11 @@ export function useUpdateClubStatus() {
   })
 }
 
-export function useSetSelfService() {
+export function useSetClubOption() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ clubId, selfService }: { clubId: string; selfService: boolean }) => {
-      const { error } = await supabase.from('clubs').update({ self_service: selfService }).eq('id', clubId)
+    mutationFn: async ({ clubId, option, value }: { clubId: string; option: ClubOption; value: boolean }) => {
+      const { error } = await supabase.from('clubs').update({ [option]: value }).eq('id', clubId)
       if (error) throw error
     },
     onSuccess: (_d, v) => queryClient.invalidateQueries({ queryKey: ['club', v.clubId] }),
