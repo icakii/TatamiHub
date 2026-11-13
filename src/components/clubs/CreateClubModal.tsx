@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Modal } from '../Modal'
 import { useCreateClub } from '../../hooks/useClubs'
 
+const RESERVED_SLUGS = ['login', 'forgot-password', 'reset-password', 'privacy', 'terms', 'icons', 'assets', 'admin', 'app']
+
 // Latin + Cyrillic -> URL slug ("Кимé Карате" -> "kime-karate").
 const CYR: Record<string, string> = {
   а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k',
@@ -47,6 +49,11 @@ export function CreateClubModal({
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    // The app lives at app.tatamistudio.net/<slug>; these are its own pages.
+    if (RESERVED_SLUGS.includes(slug.trim())) {
+      setError(`"${slug.trim()}" is reserved by the app. Pick another slug.`)
+      return
+    }
     try {
       const club = await createClub.mutateAsync({
         name: name.trim(),

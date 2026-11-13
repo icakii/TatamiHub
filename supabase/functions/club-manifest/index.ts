@@ -43,7 +43,9 @@ Deno.serve(async (req) => {
   const [club] = res.ok ? await res.json() : []
   if (!club) return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers })
 
-  const asset = (file: string) => `${base}/storage/v1/object/public/club-assets/${club.id}/${file}`
+  // logo_path carries ?v=<time> after each upload; reuse it so phones refetch replaced icons.
+  const version = club.logo_path?.includes('?') ? '?' + club.logo_path.split('?')[1] : ''
+  const asset = (file: string) => `${base}/storage/v1/object/public/club-assets/${club.id}/${file}${version}`
   const icons = club.logo_path
     ? [
         { src: asset('icon-192.png'), sizes: '192x192', type: 'image/png' },

@@ -21,6 +21,9 @@ export interface ClubWithChannels extends Club {
   grades_enabled: boolean
   qr_checkin_enabled: boolean
   store_enabled: boolean
+  // Branding in the shared app: logo file under club-assets/<club_id>/ and accent colour.
+  logo_path: string | null
+  accent_color: string
 }
 
 export type ClubOption = 'grades_enabled' | 'qr_checkin_enabled' | 'store_enabled'
@@ -42,7 +45,7 @@ export function useClub(clubId: string | undefined) {
     queryFn: async (): Promise<ClubWithChannels> => {
       const { data, error } = await supabase
         .from('clubs')
-        .select('id, slug, name, status, channels, grades_enabled, qr_checkin_enabled, store_enabled')
+        .select('id, slug, name, status, channels, grades_enabled, qr_checkin_enabled, store_enabled, logo_path, accent_color')
         .eq('id', clubId as string)
         .single()
       if (error) throw error

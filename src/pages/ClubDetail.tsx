@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { AnnouncementComposer } from '../components/announcements/AnnouncementComposer'
 import { AnnouncementHistory } from '../components/announcements/AnnouncementHistory'
 import { AttendanceTab } from '../components/attendance/AttendanceTab'
+import { BrandingTab } from '../components/clubs/BrandingTab'
 import { CompetitionsTab } from '../components/competitions/CompetitionsTab'
 import { GroupsTab } from '../components/groups/GroupsTab'
 import { AddMemberModal } from '../components/members/AddMemberModal'
@@ -17,7 +18,7 @@ import { useGroups } from '../hooks/useGroups'
 import { beltLabel, useBelts, useMembers, useUpdateMember, type Member } from '../hooks/useMembers'
 
 const STATUSES = ['active', 'trial', 'paused', 'left'] as const
-const TABS = ['overview', 'members', 'payments', 'attendance', 'groups', 'schedule', 'competitions', 'announcements'] as const
+const TABS = ['overview', 'branding', 'members', 'payments', 'attendance', 'groups', 'schedule', 'competitions', 'announcements'] as const
 type Tab = (typeof TABS)[number]
 
 const CLUB_OPTIONS: { key: ClubOption; label: string; hint: string }[] = [
@@ -90,6 +91,7 @@ export function ClubDetail() {
       </nav>
 
       {tab === 'overview' && <OverviewTab clubId={clubId} />}
+      {tab === 'branding' && <BrandingTab club={club} />}
       {tab === 'members' && <MembersTab clubId={clubId} />}
       {tab === 'payments' && <PaymentsTab clubId={clubId} />}
       {tab === 'attendance' && <AttendanceTab clubId={clubId} />}
