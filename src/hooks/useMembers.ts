@@ -31,6 +31,7 @@ export interface Member {
   guardian_email: string | null
   monthly_fee_cents: number | null
   photo_path: string | null
+  egn: string | null
   height_cm: number | null
   weight_kg: number | null
   belt: Belt | null
@@ -43,7 +44,7 @@ export function useMembers(clubId: string | undefined) {
       const { data, error } = await supabase
         .from('members')
         .select(
-          'id, full_name, email, phone, role, status, birth_year, user_id, group_id, guardian_first_name, guardian_last_name, guardian_phone, guardian_email, monthly_fee_cents, photo_path, height_cm, weight_kg, belt:belts(id, rank, name_bg, name_en, color_hex, grade_bg)',
+          'id, full_name, email, phone, role, status, birth_year, user_id, group_id, guardian_first_name, guardian_last_name, guardian_phone, guardian_email, monthly_fee_cents, photo_path, egn, height_cm, weight_kg, belt:belts(id, rank, name_bg, name_en, color_hex, grade_bg)',
         )
         .eq('club_id', clubId as string)
         .order('full_name')
@@ -91,6 +92,7 @@ export function useUpdateMember(clubId: string | undefined) {
         email: string | null
         phone: string | null
         birth_year: number | null
+        egn: string | null
         height_cm: number | null
         weight_kg: number | null
       }>

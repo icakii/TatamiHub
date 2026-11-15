@@ -40,6 +40,7 @@ export function EditMemberModal({
     email: initial.email ?? '',
     phone: initial.phone ?? '',
     birth_year: initial.birth_year ? String(initial.birth_year) : '',
+    egn: initial.egn ?? '',
     height_cm: initial.height_cm ? String(initial.height_cm) : '',
     weight_kg: initial.weight_kg ? String(initial.weight_kg) : '',
     guardian_first_name: initial.guardian_first_name ?? '',
@@ -61,6 +62,7 @@ export function EditMemberModal({
           email: orNull(form.email),
           phone: orNull(form.phone),
           birth_year: toInt(form.birth_year),
+          egn: orNull(form.egn),
           height_cm: toInt(form.height_cm),
           weight_kg: toInt(form.weight_kg),
           guardian_first_name: orNull(form.guardian_first_name),
@@ -120,6 +122,9 @@ export function EditMemberModal({
             <input type="email" maxLength={200} value={form.email} onChange={set('email')} className={fieldClass} />
           </Field>
         </div>
+        <Field label="ЕГН (personal number)">
+          <input inputMode="numeric" pattern="[0-9]{10}" maxLength={10} value={form.egn} onChange={set('egn')} className={`${fieldClass} font-mono`} />
+        </Field>
         <div className="grid grid-cols-3 gap-3">
           <Field label="Birth year">
             <input type="number" min={1930} max={new Date().getFullYear()} value={form.birth_year} onChange={set('birth_year')} className={fieldClass} />
