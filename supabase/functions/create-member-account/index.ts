@@ -148,8 +148,8 @@ Deno.serve(async (req) => {
     }
     userId = existingUserId as string
   } else {
-    if (!body.password || body.password.length < 6) {
-      return json({ error: 'Паролата трябва да е поне 6 символа.' }, 400, cors)
+    if (!body.password || body.password.length < 8) {
+      return json({ error: 'Паролата трябва да е поне 8 символа.' }, 400, cors)
     }
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email,
