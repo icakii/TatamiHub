@@ -3,6 +3,8 @@ import { PlatformAdminRoute } from './components/PlatformAdminRoute'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { HubLayout } from './layouts/HubLayout'
 import { Billing } from './pages/Billing'
+import { Board } from './pages/Board'
+import { Finance } from './pages/Finance'
 import { ClubDetail } from './pages/ClubDetail'
 import { Clubs } from './pages/Clubs'
 import { Login } from './pages/Login'
@@ -28,6 +30,8 @@ function App() {
         <Route path="clubs/:clubId" element={<ClubDetail />} />
         <Route path="billing" element={<Billing />} />
         <Route path="orders" element={<Orders />} />
+        <Route path="finance" element={<Finance />} />
+        <Route path="board" element={<Board />} />
       </Route>
     </Routes>
   )

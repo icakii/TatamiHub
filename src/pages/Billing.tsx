@@ -2,6 +2,7 @@ import { useBilling, useMarkPaid } from '../hooks/useBilling'
 import { useUpdateClubStatus } from '../hooks/useClubs'
 import { PageTitle, StatTile, StatusBadge } from '../components/ui'
 import { localISODate } from '../lib/date'
+import { useState } from 'react'
 
 function formatPrice(cents: number): string {
   return `${(cents / 100).toFixed(2)} EUR`
@@ -12,6 +13,7 @@ export function Billing() {
   const markPaid = useMarkPaid()
   const updateStatus = useUpdateClubStatus()
   const today = localISODate()
+  const [method, setMethod] = useState<'bank' | 'cash' | 'card'>('bank')
 
   const live = (rows ?? []).filter((r) => r.club.status === 'live')
   const mrrCents = live.reduce((sum, r) => sum + r.monthly_price_cents, 0)
@@ -21,7 +23,7 @@ export function Billing() {
     <div className="px-6 py-8">
       <PageTitle
         title="Billing"
-        subtitle="What each club owes us. Paddle payments update this automatically; use Mark paid for bank transfers or cash."
+        subtitle="What each club owes us. Clubs pay by bank, cash or card; Mark paid moves them a month ahead and books the income in Finance."
       />
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
@@ -30,7 +32,21 @@ export function Billing() {
         <StatTile label="Live clubs" value={`${live.length} / ${rows?.length ?? 0}`} accent="bg-straw" />
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-line">
+      <div className="mt-6 flex items-center gap-2 text-xs text-muted">
+        Mark paid as
+        {(['bank', 'cash', 'card'] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMethod(m)}
+            className={`rounded-full px-3 py-1 uppercase tracking-wide ${method === m ? 'bg-straw text-ink' : 'border border-line hover:text-text'}`}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 overflow-x-auto rounded-lg border border-line">
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-line bg-panel text-left text-xs uppercase tracking-wide text-muted">
@@ -74,7 +90,7 @@ export function Billing() {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => markPaid.mutate(row.club_id)}
+                        onClick={() => markPaid.mutate({ clubId: row.club_id, method, amountCents: row.monthly_price_cents })}
                         disabled={markPaid.isPending}
                         className="min-h-11 rounded-md border border-line px-3 text-xs uppercase tracking-wide text-muted disabled:opacity-60"
                       >

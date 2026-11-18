@@ -32,7 +32,8 @@ export function useBilling() {
 export function useMarkPaid() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (clubId: string) => {
+    // Also books the month as income in Finance, with how it was paid.
+    mutationFn: async ({ clubId, method, amountCents }: { clubId: string; method: 'cash' | 'card' | 'bank'; amountCents: number }) => {
       const { data: current, error: fetchError } = await supabase
         .from('club_billing')
         .select('paid_until')
@@ -49,9 +50,22 @@ export function useMarkPaid() {
         .update({ paid_until: localISODate(next) })
         .eq('club_id', clubId)
       if (error) throw error
+
+      if (amountCents > 0) {
+        const { error: ledgerError } = await supabase.from('ledger_entries').insert({
+          kind: 'income',
+          amount_cents: amountCents,
+          category: 'Subscription',
+          club_id: clubId,
+          method,
+          description: `Monthly fee until ${localISODate(next)}`,
+        })
+        if (ledgerError) throw ledgerError
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billing'] })
+      queryClient.invalidateQueries({ queryKey: ['ledger'] })
     },
   })
 }
