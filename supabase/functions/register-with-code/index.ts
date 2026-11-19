@@ -11,7 +11,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
-const LEGAL_VERSION = '2026-11-18'
+const LEGAL_VERSION = '2026-11-19'
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE = /^\+?[0-9 ()-]{6,20}$/
 
@@ -55,6 +55,7 @@ interface Body {
   account?: { email: string; password: string; full_name: string; phone: string }
   students: StudentIn[]
   accepted: boolean
+  photo_consent?: boolean
 }
 
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
@@ -76,7 +77,7 @@ Deno.serve(async (req) => {
   // Step 1 in the app: is this code right? Shows the club's name and logo.
   if (body.check) {
     const code = str(body.code, 12).toUpperCase().replace(/[^A-Z0-9]/g, '')
-    const { data } = await admin.from('club_join_codes').select('club:clubs(id, slug, name, logo_path, accent_color, status)').eq('code', code).maybeSingle()
+    const { data } = await admin.from('club_join_codes').select('club:clubs(id, slug, name, logo_path, accent_color, status, member_terms)').eq('code', code).maybeSingle()
     const club = data?.club as { status: string } | null | undefined
     if (!club || club.status === 'paused') return json({ error: 'Грешен код на клуба.' }, 404, cors)
     return json({ club }, 200, cors)
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
   } else {
     return json({ error: 'Липсва код на клуба.' }, 400, cors)
   }
-  const { data: club } = await admin.from('clubs').select('id, slug, name, status').eq('id', clubId).single()
+  const { data: club } = await admin.from('clubs').select('id, slug, name, status, member_terms_updated_at').eq('id', clubId).single()
   if (!club || club.status === 'paused') return json({ error: 'Клубът не приема регистрации в момента.' }, 403, cors)
 
   // Students.
@@ -196,7 +197,18 @@ Deno.serve(async (req) => {
 
   await admin
     .from('legal_acceptances')
-    .upsert({ user_id: userId, club_id: clubId, version: LEGAL_VERSION, as_guardian: role === 'parent' }, { ignoreDuplicates: true })
+    .upsert(
+      {
+        user_id: userId,
+        club_id: clubId,
+        version: LEGAL_VERSION,
+        as_guardian: role === 'parent',
+        // Which version of the club's rules was accepted (null = the standard text).
+        club_terms_at: club.member_terms_updated_at ?? null,
+        photo_consent: body.photo_consent === true,
+      },
+      { onConflict: 'user_id,club_id,version' },
+    )
 
   return json({ ok: true, club: { slug: club.slug, name: club.name }, students: inserted }, 200, cors)
 })
