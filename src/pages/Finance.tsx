@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react'
+import { RecurringCosts } from '../components/RecurringCosts'
 import { PageTitle, StatTile } from '../components/ui'
 import { useClubs } from '../hooks/useClubs'
 import {
@@ -222,6 +223,8 @@ export function Finance() {
           </tbody>
         </table>
       </div>
+
+      <RecurringCosts />
 
       {adding && <EntryModal kind={adding} onClose={() => setAdding(null)} />}
     </div>
