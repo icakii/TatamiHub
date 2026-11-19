@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { HubLayout } from './layouts/HubLayout'
 import { Billing } from './pages/Billing'
 import { Board } from './pages/Board'
+import { Calendar } from './pages/Calendar'
 import { Finance } from './pages/Finance'
 import { ClubDetail } from './pages/ClubDetail'
 import { Clubs } from './pages/Clubs'
@@ -32,6 +33,7 @@ function App() {
         <Route path="orders" element={<Orders />} />
         <Route path="finance" element={<Finance />} />
         <Route path="board" element={<Board />} />
+        <Route path="calendar" element={<Calendar />} />
       </Route>
     </Routes>
   )

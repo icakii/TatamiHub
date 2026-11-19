@@ -8,6 +8,7 @@ const NAV = [
   { to: '/orders', label: 'Orders', end: false },
   { to: '/finance', label: 'Finance', end: false },
   { to: '/board', label: 'Board', end: false },
+  { to: '/calendar', label: 'Calendar', end: false },
 ]
 
 export function HubLayout() {
