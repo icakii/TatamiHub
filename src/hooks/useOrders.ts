@@ -18,6 +18,7 @@ export interface Order {
   domain_option: 'subdomain' | 'own' | 'new'
   domain: string | null
   notes: string | null
+  setup: import('../components/OrderSetup').OrderSetupData | null
   status: OrderStatus
   paid_until: string | null
   cancel_at: string | null
@@ -33,7 +34,7 @@ export function useOrders() {
       const { data, error } = await supabase
         .from('orders')
         .select(
-          'id, contact_name, email, phone, club_name, plan, city, student_count, domain_option, domain, notes, status, paid_until, cancel_at, paddle_subscription_id, club_id, created_at',
+          'id, contact_name, email, phone, club_name, plan, city, student_count, domain_option, domain, notes, setup, status, paid_until, cancel_at, paddle_subscription_id, club_id, created_at',
         )
         .order('created_at', { ascending: false })
       if (error) throw error

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { OrderSetup } from '../components/OrderSetup'
 import { Link } from 'react-router-dom'
 import { CreateClubModal } from '../components/clubs/CreateClubModal'
 import { PageTitle, StatTile, StatusBadge } from '../components/ui'
@@ -130,6 +131,8 @@ export function Orders() {
                 <span className="font-mono text-xs">{o.paddle_subscription_id ?? '-'}</span>
               </Detail>
             </div>
+
+            {o.setup && <OrderSetup setup={o.setup} />}
 
             {o.notes && (
               <p className="mt-4 whitespace-pre-wrap rounded-md border border-line bg-ink/40 p-3 text-sm text-muted">{o.notes}</p>

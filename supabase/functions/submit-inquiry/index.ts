@@ -20,6 +20,30 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const str = (v: unknown, max: number) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null)
 
+// The optional club setup (halls, groups, coaches...): only known fields,
+// short strings, capped list sizes.
+type Row = Record<string, unknown>
+const rows = (v: unknown, max: number, fields: Record<string, number>) =>
+  (Array.isArray(v) ? v : [])
+    .slice(0, max)
+    .map((r: Row) => Object.fromEntries(Object.entries(fields).map(([k, len]) => [k, str(r?.[k], len)])))
+    .filter((r) => Object.values(r).some(Boolean))
+
+function cleanSetup(v: unknown) {
+  if (!v || typeof v !== 'object') return null
+  const s = v as Row
+  const extras = (s.extras ?? {}) as Row
+  const setup = {
+    halls: rows(s.halls, 10, { name: 80, address: 160 }),
+    groups: rows(s.groups, 30, { name: 80, ages: 60, hall: 80, schedule: 200, fee: 20 }),
+    coaches: rows(s.coaches, 15, { name: 80, phone: 40, email: 120, role: 10 }),
+    belts: ['kyu_dan', 'colors', 'other'].includes(String(s.belts)) ? String(s.belts) : null,
+    extras: { grades: extras.grades === true, qr: extras.qr === true, store: extras.store === true },
+    accent: /^#[0-9a-fA-F]{6}$/.test(String(s.accent)) ? String(s.accent) : null,
+  }
+  return setup.halls.length || setup.groups.length || setup.coaches.length || setup.belts || setup.accent ? setup : null
+}
+
 Deno.serve(async (req) => {
   const cors = corsHeaders(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
@@ -82,6 +106,7 @@ Deno.serve(async (req) => {
     domain: domain_option === 'subdomain' ? null : str(body.domain, 120)?.toLowerCase() ?? null,
     notes,
     plan,
+    setup: cleanSetup(body.setup),
     status: 'inquiry',
     terms_accepted_at: new Date().toISOString(),
   })
