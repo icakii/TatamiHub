@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { eur } from '../hooks/useLedger'
+import { safeHttpUrl } from '../lib/date'
 import { supabase } from '../lib/supabaseClient'
 
 type Period = 'monthly' | 'yearly' | 'one_time'
@@ -100,8 +101,8 @@ export function RecurringCosts() {
           <li key={c.id} className="flex flex-wrap items-center gap-3 py-3">
             <div className="min-w-0 flex-1">
               <p className="text-text">
-                {c.url ? (
-                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="hover:text-straw">
+                {safeHttpUrl(c.url) ? (
+                  <a href={safeHttpUrl(c.url)!} target="_blank" rel="noopener noreferrer" className="hover:text-straw">
                     {c.name} ↗
                   </a>
                 ) : (

@@ -10,13 +10,11 @@ import { ClubDetail } from './pages/ClubDetail'
 import { Clubs } from './pages/Clubs'
 import { Login } from './pages/Login'
 import { Orders } from './pages/Orders'
-import { Signup } from './pages/Signup'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
       <Route
         path="/"
         element={

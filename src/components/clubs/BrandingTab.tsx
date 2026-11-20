@@ -105,7 +105,7 @@ export function BrandingTab({ club }: { club: ClubWithChannels }) {
           <input
             ref={fileRef}
             type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            accept="image/png,image/jpeg,image/webp"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0] ?? null

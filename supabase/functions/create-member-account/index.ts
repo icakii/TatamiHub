@@ -18,6 +18,7 @@
 // sister on the same login instead of making a new one.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { allow } from '../_shared/rateLimit.ts'
 
 function json(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
@@ -102,6 +103,10 @@ Deno.serve(async (req) => {
 
   // Elevated client, only ever used after the checks above.
   const admin = createClient(supabaseUrl, serviceRoleKey)
+  // A coach adds a class at a time, not hundreds a minute.
+  if (!(await allow(admin, `create-login:${caller.id}`, 60, 3600))) {
+    return json({ error: 'Твърде много нови входове за кратко време. Опитай пак след малко.' }, 429, cors)
+  }
 
   const emailFree = async (e: string) => !(await admin.rpc('auth_user_id_by_email', { p_email: e })).data
 

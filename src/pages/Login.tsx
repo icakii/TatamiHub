@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 export function Login() {
@@ -77,12 +77,7 @@ export function Login() {
           </button>
         </form>
 
-        <Link
-          to="/signup"
-          className="mt-6 block text-center text-sm text-muted hover:text-hanko-text"
-        >
-          Need an account? Create one
-        </Link>
+        <p className="mt-6 text-center text-xs text-muted">Founders only. Accounts are created by Tatami.</p>
       </div>
     </div>
   )

@@ -19,7 +19,7 @@ import {
   type TeamNote,
 } from '../hooks/useBoard'
 import { openPrivateFile } from '../hooks/useLedger'
-import { localISODate } from '../lib/date'
+import { localISODate, safeHttpUrl } from '../lib/date'
 
 const input = 'mt-1 min-h-10 w-full rounded-md border border-line bg-ink px-3 text-sm text-text outline-none focus:border-straw'
 const label = 'block text-[11px] uppercase tracking-wider text-muted'
@@ -312,9 +312,13 @@ function NotePanel({ note, onClose }: { note: TeamNote; onClose: () => void }) {
           <ul className="mt-2 space-y-1">
             {note.links.map((l, i) => (
               <li key={i} className="flex items-center justify-between gap-2 rounded-md bg-ink px-3 py-2 text-sm">
-                <a href={l.url} target="_blank" rel="noopener noreferrer" className="truncate text-straw hover:underline">
-                  🔗 {l.label}
-                </a>
+                {safeHttpUrl(l.url) ? (
+                  <a href={safeHttpUrl(l.url)!} target="_blank" rel="noopener noreferrer" className="truncate text-straw hover:underline">
+                    🔗 {l.label}
+                  </a>
+                ) : (
+                  <span className="truncate text-muted">🔗 {l.label}</span>
+                )}
                 <button type="button" onClick={() => update({ links: note.links.filter((_, j) => j !== i) })} className="text-xs text-muted hover:text-hanko-text" aria-label="Remove link">
                   ✕
                 </button>

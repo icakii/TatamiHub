@@ -6,6 +6,7 @@
 // A signed-in caller still gets the order on their account.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { allow, clientIp } from '../_shared/rateLimit.ts'
 
 function json(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
@@ -76,6 +77,9 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+  if (!(await allow(admin, `inquiry:${clientIp(req)}`, 5, 3600))) {
+    return json({ error: 'Too many requests. Please write to us by email.' }, 429, cors)
+  }
 
   // Signed in? Keep the request on their account page.
   let userId: string | null = null

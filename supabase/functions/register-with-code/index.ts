@@ -10,6 +10,7 @@
 // 8+; the user must tick the terms (stored in legal_acceptances).
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
+import { allow, clientIp } from '../_shared/rateLimit.ts'
 
 const LEGAL_VERSION = '2026-11-19'
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -74,8 +75,13 @@ Deno.serve(async (req) => {
   const url = Deno.env.get('SUPABASE_URL')!
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
+  // Per-IP limits: code guessing and mass sign-ups.
+  const ip = clientIp(req)
+  const tooMany = () => json({ error: 'Твърде много опити. Опитай пак след малко.' }, 429, cors)
+
   // Step 1 in the app: is this code right? Shows the club's name and logo.
   if (body.check) {
+    if (!(await allow(admin, `code-check:${ip}`, 20, 600))) return tooMany()
     const code = str(body.code, 12).toUpperCase().replace(/[^A-Z0-9]/g, '')
     const { data } = await admin.from('club_join_codes').select('club:clubs(id, slug, name, logo_path, accent_color, status, member_terms)').eq('code', code).maybeSingle()
     const club = data?.club as { status: string } | null | undefined
@@ -84,6 +90,7 @@ Deno.serve(async (req) => {
   }
 
   if (!body.accepted) return json({ error: 'Трябва да приемеш условията.' }, 400, cors)
+  if (!(await allow(admin, `register:${ip}`, 10, 3600))) return tooMany()
 
   // Signed in already? Then this adds children to that login.
   let userId: string | null = null
